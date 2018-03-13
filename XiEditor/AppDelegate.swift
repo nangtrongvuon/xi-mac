@@ -83,7 +83,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, XiClient {
     var documentController: XiDocumentController!
 
     // This is set to 'InconsolataGo' in the user preferences; this value is a fallback.
-    let fallbackFont = CTFontCreateWithName(("Menlo" as CFString?)!, 14, nil)
+    let fallbackFont = CTFontCreateWithName(("Inconsolata" as CFString?)!, 14, nil)
 
     lazy fileprivate var _textMetrics = TextDrawingMetrics(font: self.fallbackFont,
                                                            textColor: self.theme.foreground)
