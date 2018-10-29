@@ -101,6 +101,8 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Sc
         return controller
     }()
 
+
+
     var document: Document!
 
     var xiView: XiViewProxy!
@@ -243,6 +245,14 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Sc
     // Incrementing request identifiers to be used with hover definition requests.
     var hoverRequestID = 0
 
+    lazy var quickOpenViewController: QuickOpenViewController! = {
+        let storyboard = NSStoryboard(name: NSStoryboard.Name(rawValue: "Main"), bundle: nil)
+        let controller = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "Quick Open View Controller")) as! QuickOpenViewController
+        return controller
+    }()
+
+    var quickOpenPanelController: QuickOpenPanelController!
+
     override func viewDidLoad() {
         super.viewDidLoad()
         shadowView.wantsLayer = true
@@ -259,6 +269,7 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Sc
     override func viewDidAppear() {
         super.viewDidAppear()
         setupStatusBar()
+        setupQuickOpenPanel()
         shadowView.setup()
         NotificationCenter.default.addObserver(self, selector: #selector(frameDidChangeNotification), name: NSView.frameDidChangeNotification, object: scrollView)
         // call to set initial scroll position once we know view size
@@ -272,6 +283,13 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Sc
 
     func setupStatusBar() {
         statusBar.hasUnifiedTitlebar = unifiedTitlebar
+    }
+
+    func setupQuickOpenPanel() {
+        let panel = NSPanel(contentViewController: quickOpenViewController)
+        let quickOpenPanelController = QuickOpenPanelController(window: panel)
+        quickOpenPanelController.editViewController = self
+        self.quickOpenPanelController = quickOpenPanelController
     }
 
     func updateGutterWidth() {
@@ -544,6 +562,25 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Sc
 
     @objc func clearRecording(_ sender: Any?) {
         xiView.clearRecording(name: "DEFAULT")
+    }
+
+    @objc func showQuickOpen(_ sender: Any?) {
+        self.presentViewControllerAsSheet(quickOpenViewController)
+    }
+
+    fileprivate func cutCopy(_ method: String) {
+        if let result = document?.sendRpc(method, params: []) {
+            switch result {
+            case .ok(let text):
+                if let text = text as? String {
+                    let pasteboard = NSPasteboard.general
+                    pasteboard.clearContents()
+                    pasteboard.writeObjects([text as NSPasteboardWriting])
+                }
+            case .error(let err):
+                print("cut/copy failed: \(err)")
+            }
+        }
     }
 
     @objc func paste(_ sender: AnyObject?) {

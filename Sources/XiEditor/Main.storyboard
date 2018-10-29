@@ -488,6 +488,70 @@ Gw
             </objects>
             <point key="canvasLocation" x="956.5" y="167.5"/>
         </scene>
+        <!--Quick Open Controller-->
+        <scene sceneID="tlx-13-xfq">
+            <objects>
+                <viewController title="Quick Open Controller" storyboardIdentifier="Quick Open View Controller" id="Zcy-7W-qQz" customClass="QuickOpenViewController" customModule="XiEditor" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" id="U8f-QF-8oO">
+                        <rect key="frame" x="0.0" y="0.0" width="480" height="119"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="HZc-Ta-I8r">
+                                <rect key="frame" x="15" y="64" width="450" height="35"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="35" id="jEF-zl-lIk"/>
+                                </constraints>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" alignment="left" placeholderString="Open Quickly" drawsBackground="YES" id="6sq-Vo-Tio">
+                                    <font key="font" metaFont="system" size="20"/>
+                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ef2-BI-7tv">
+                                <rect key="frame" x="407" y="28" width="59" height="32"/>
+                                <buttonCell key="cell" type="push" title="OK" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="OE2-P6-jtu">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                    <string key="keyEquivalent" base64-UTF8="YES">
+DQ
+</string>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="okButtonPressed:" target="Zcy-7W-qQz" id="Rfa-gq-FiV"/>
+                                </connections>
+                            </button>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="jYo-63-jd9">
+                                <rect key="frame" x="325" y="28" width="82" height="32"/>
+                                <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="sxw-Dm-JLc">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                    <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="cancelButtonPressed:" target="Zcy-7W-qQz" id="bMj-Bj-ep6"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <constraints>
+                            <constraint firstItem="ef2-BI-7tv" firstAttribute="leading" secondItem="jYo-63-jd9" secondAttribute="trailing" constant="12" symbolic="YES" id="1Vx-YM-lpM"/>
+                            <constraint firstItem="HZc-Ta-I8r" firstAttribute="leading" secondItem="U8f-QF-8oO" secondAttribute="leading" constant="15" id="H9q-Ox-BrG"/>
+                            <constraint firstItem="HZc-Ta-I8r" firstAttribute="top" secondItem="U8f-QF-8oO" secondAttribute="top" constant="20" symbolic="YES" id="Yyx-GM-md6"/>
+                            <constraint firstItem="jYo-63-jd9" firstAttribute="baseline" secondItem="ef2-BI-7tv" secondAttribute="baseline" id="e2i-UB-FYQ"/>
+                            <constraint firstItem="jYo-63-jd9" firstAttribute="top" secondItem="HZc-Ta-I8r" secondAttribute="bottom" constant="8" symbolic="YES" id="kod-s2-NSS"/>
+                            <constraint firstAttribute="trailing" secondItem="ef2-BI-7tv" secondAttribute="trailing" constant="20" symbolic="YES" id="nYH-KT-szQ"/>
+                            <constraint firstAttribute="trailing" secondItem="HZc-Ta-I8r" secondAttribute="trailing" constant="15" id="qtF-2v-hxd"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="inputTextField" destination="HZc-Ta-I8r" id="Ydd-xq-nsm"/>
+                    </connections>
+                </viewController>
+                <customObject id="5sT-5t-72r" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="956" y="333"/>
+        </scene>
         <!--Application-->
         <scene sceneID="uLn-e8-8sb">
             <objects>
@@ -565,6 +629,11 @@ Gw
                                         <menuItem title="Open…" keyEquivalent="o" id="Fky-0f-86X">
                                             <connections>
                                                 <action selector="openDocument:" target="7er-QZ-amI" id="43H-U3-Lye"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Quick Open" keyEquivalent="O" id="cEb-aB-QND">
+                                            <connections>
+                                                <action selector="showQuickOpen:" target="7er-QZ-amI" id="CFp-CC-XLi"/>
                                             </connections>
                                         </menuItem>
                                         <menuItem title="Open Recent" id="2WR-q1-qjS">
