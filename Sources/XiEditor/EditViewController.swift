@@ -251,8 +251,6 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Sc
         return controller
     }()
 
-    var quickOpenPanelController: QuickOpenPanelController!
-
     override func viewDidLoad() {
         super.viewDidLoad()
         shadowView.wantsLayer = true
@@ -269,7 +267,6 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Sc
     override func viewDidAppear() {
         super.viewDidAppear()
         setupStatusBar()
-        setupQuickOpenPanel()
         shadowView.setup()
         NotificationCenter.default.addObserver(self, selector: #selector(frameDidChangeNotification), name: NSView.frameDidChangeNotification, object: scrollView)
         // call to set initial scroll position once we know view size
@@ -283,13 +280,6 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Sc
 
     func setupStatusBar() {
         statusBar.hasUnifiedTitlebar = unifiedTitlebar
-    }
-
-    func setupQuickOpenPanel() {
-        let panel = NSPanel(contentViewController: quickOpenViewController)
-        let quickOpenPanelController = QuickOpenPanelController(window: panel)
-        quickOpenPanelController.editViewController = self
-        self.quickOpenPanelController = quickOpenPanelController
     }
 
     func updateGutterWidth() {
