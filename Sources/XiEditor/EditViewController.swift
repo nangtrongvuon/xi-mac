@@ -242,9 +242,12 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Sc
         return popover
     }()
 
+
+
     // Incrementing request identifiers to be used with hover definition requests.
     var hoverRequestID = 0
 
+    var quickOpenPanel: QuickOpenPanel!
     lazy var quickOpenViewController: QuickOpenViewController! = {
         let storyboard = NSStoryboard(name: NSStoryboard.Name(rawValue: "Main"), bundle: nil)
         let controller = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "Quick Open View Controller")) as! QuickOpenViewController
@@ -267,6 +270,7 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Sc
     override func viewDidAppear() {
         super.viewDidAppear()
         setupStatusBar()
+        setupQuickOpen()
         shadowView.setup()
         NotificationCenter.default.addObserver(self, selector: #selector(frameDidChangeNotification), name: NSView.frameDidChangeNotification, object: scrollView)
         // call to set initial scroll position once we know view size
@@ -280,6 +284,14 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Sc
 
     func setupStatusBar() {
         statusBar.hasUnifiedTitlebar = unifiedTitlebar
+    }
+
+    func setupQuickOpen() {
+        quickOpenPanel = QuickOpenPanel(contentViewController: quickOpenViewController)
+        quickOpenPanel.worksWhenModal = true
+        quickOpenPanel.hidesOnDeactivate = true
+        quickOpenPanel.becomesKeyOnlyIfNeeded = true
+        quickOpenPanel.styleMask = [.nonactivatingPanel]
     }
 
     func updateGutterWidth() {
@@ -555,7 +567,7 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Sc
     }
 
     @objc func showQuickOpen(_ sender: Any?) {
-        self.presentViewControllerAsSheet(quickOpenViewController)
+        editView.window?.beginSheet(quickOpenPanel, completionHandler: nil)
     }
 
     fileprivate func cutCopy(_ method: String) {
@@ -637,6 +649,7 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Sc
             editView.window?.makeFirstResponder(editView)
         }
         infoPopover.performClose(self)
+        editView.window?.endSheet(quickOpenPanel)
         editView.unmarkText()
         editView.inputContext?.discardMarkedText()
         let position = editView.bufferPositionFromPoint(theEvent.locationInWindow)
