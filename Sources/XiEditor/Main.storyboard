@@ -492,28 +492,22 @@ Gw
         <scene sceneID="tlx-13-xfq">
             <objects>
                 <viewController title="Quick Open Controller" storyboardIdentifier="Quick Open View Controller" id="Zcy-7W-qQz" customClass="QuickOpenViewController" customModule="XiEditor" customModuleProvider="target" sceneMemberID="viewController">
-                    <customView key="view" id="IQc-jT-j3r">
-                        <rect key="frame" x="0.0" y="0.0" width="460" height="22"/>
+                    <searchField key="view" wantsLayer="YES" verticalHuggingPriority="750" textCompletion="NO" id="Qfx-me-DLu">
+                        <rect key="frame" x="0.0" y="0.0" width="450" height="22"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <subviews>
-                            <searchField wantsLayer="YES" verticalHuggingPriority="750" fixedFrame="YES" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Qfx-me-DLu">
-                                <rect key="frame" x="0.0" y="0.0" width="460" height="22"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" id="bxd-Tg-OQC">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </searchFieldCell>
-                            </searchField>
-                        </subviews>
-                    </customView>
+                        <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" id="bxd-Tg-OQC">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </searchFieldCell>
+                    </searchField>
                     <connections>
                         <outlet property="inputSearchField" destination="Qfx-me-DLu" id="wcz-7c-SAT"/>
                     </connections>
                 </viewController>
                 <customObject id="5sT-5t-72r" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="952" y="342"/>
+            <point key="canvasLocation" x="952" y="363"/>
         </scene>
         <!--Quick Open Suggestions Table View Controller-->
         <scene sceneID="G2z-4e-TkA">

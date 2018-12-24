@@ -21,7 +21,6 @@ class QuickOpenSuggestionsTableViewController: NSViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        roundCompletionViewCorners()
 
         suggestionsTableView.wantsLayer = true
         suggestionsTableView.focusRingType = .none
@@ -30,14 +29,6 @@ class QuickOpenSuggestionsTableViewController: NSViewController {
         suggestionsTableView.target = self
 
         suggestionsScrollView.setFrameSize(NSSize(width: suggestionsScrollView.frame.width, height: 100))
-    }
-
-    func roundCompletionViewCorners() {
-        let scrollView = suggestionsTableView.enclosingScrollView!
-        scrollView.wantsLayer = true
-        scrollView.layer?.cornerRadius = 7
-        scrollView.contentView.wantsLayer = true
-        scrollView.contentView.layer?.cornerRadius = 7
     }
 
     // Force table view to load all of its views on awake from nib.
