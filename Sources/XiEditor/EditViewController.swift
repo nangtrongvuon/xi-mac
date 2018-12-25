@@ -77,7 +77,7 @@ protocol MarkerDelegate: class {
     func setMarker(_ items: [Marker])
 }
 
-class EditViewController: NSViewController, EditViewDataSource, FindDelegate, ScrollInterested, MarkerDelegate, NSMenuItemValidation {
+class EditViewController: NSViewController, EditViewDataSource, FindDelegate, QuickOpenDelegate, ScrollInterested, MarkerDelegate, NSMenuItemValidation {
     @IBOutlet var scrollView: NSScrollView!
     @IBOutlet weak var editContainerView: EditContainerView!
     @IBOutlet var editView: EditView!
@@ -251,6 +251,7 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Sc
     lazy var quickOpenViewController: QuickOpenViewController! = {
         let storyboard = NSStoryboard(name: NSStoryboard.Name(rawValue: "Main"), bundle: nil)
         let controller = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "Quick Open View Controller")) as! QuickOpenViewController
+        controller.quickOpenDelegate = self
         return controller
     }()
 
@@ -480,7 +481,19 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Sc
         if self.responds(to: aSelector) {
             self.perform(aSelector, with: self)
         } else {
-            if let commandName = EditViewController.selectorToCommand[aSelector.description] {
+            // Forwards key events to completion view if in mid completion
+            if (quickOpenPanel.isVisible) {
+                switch aSelector {
+                case #selector(moveUp(_:)):
+                    quickOpenViewController.moveUp(self)
+                case #selector(moveDown(_:)):
+                    quickOpenViewController.moveDown(self)
+                case #selector(insertNewline(_:)):
+                    quickOpenViewController.insertNewline(self)
+                default:
+                    break
+                }
+            } else if let commandName = EditViewController.selectorToCommand[aSelector.description] {
                 document.sendRpcAsync(commandName, params: [])
             } else {
                 Swift.print("Unhandled selector: \(aSelector.description)")
@@ -567,7 +580,7 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Sc
     }
 
     @objc func showQuickOpen(_ sender: Any?) {
-        editView.window?.beginSheet(quickOpenPanel, completionHandler: nil)
+        showQuickOpenSuggestions()
     }
 
     fileprivate func cutCopy(_ method: String) {

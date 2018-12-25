@@ -14,12 +14,19 @@
 
 import Cocoa
 
+class QuickOpenPanel: NSPanel {
+    /// Required to receive keyboard input and events.
+    override var canBecomeKey: Bool {
+        return true
+    }
+}
+
 class QuickOpenSuggestionsWindowController: NSWindowController {
 
     override init(window: NSWindow?) {
         super.init(window: window)
         if let panel = window as? NSPanel {
-            panel.styleMask = [.nonactivatingPanel]
+            panel.styleMask = [.nonactivatingPanel, .borderless]
             panel.isOpaque = false
             panel.level = .floating
             panel.hidesOnDeactivate = true
@@ -30,11 +37,5 @@ class QuickOpenSuggestionsWindowController: NSWindowController {
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    override func windowDidLoad() {
-        super.windowDidLoad()
-
-        // Implement this method to handle any initialization after your window controller's window has been loaded from its nib file.
     }
 }

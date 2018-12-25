@@ -14,16 +14,27 @@
 
 import Cocoa
 
+// MARK: - Utility Classes
+class QuickOpenTableView: NSTableView {
+    override var needsPanelToBecomeKey: Bool { return true }
+    override var acceptsFirstResponder: Bool { return true }
+}
+
+class QuickOpenSuggestionCellView: NSTableCellView {
+    @IBOutlet weak var filenameTextField: NSTextField!
+}
+
+// MARK: - Suggestions Table View Controller
 class QuickOpenSuggestionsTableViewController: NSViewController {
 
-    @IBOutlet weak var suggestionsTableView: NSTableView!
+    @IBOutlet weak var suggestionsTableView: QuickOpenTableView!
     @IBOutlet var suggestionsScrollView: NSScrollView!
 
     var testData = ["someFile.swift", "someOtherFile.swift", "thirdFile.swift"]
     let suggestionRowHeight = 30
-    // Small margin, enough to hide the scrollbar.
+    /// Small margin, enough to hide the scrollbar.
     let suggestionMargin = 3
-    // The maximum number of suggestions shown without scrolling.
+    /// The maximum number of suggestions shown without scrolling.
     let maximumSuggestions = 6
     var maximumSuggestionHeight: Int {
         return maximumSuggestions * suggestionRowHeight
@@ -41,13 +52,13 @@ class QuickOpenSuggestionsTableViewController: NSViewController {
         resizeTableView()
     }
 
-    // Force table view to load all of its views on awake from nib.
+    /// Force table view to load all of its views on awake from nib.
     override func awakeFromNib() {
         super.awakeFromNib()
         _ = self.view
     }
 
-    // Resizes table view to fit suggestions.
+    /// Resizes table view to fit suggestions.
     func resizeTableView() {
         let suggestionFrameHeight = min(testData.count * suggestionRowHeight + suggestionMargin, maximumSuggestionHeight)
         let suggestionFrameSize = NSSize(width: suggestionsScrollView.frame.width, height: CGFloat(suggestionFrameHeight))
