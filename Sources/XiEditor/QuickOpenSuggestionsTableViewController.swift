@@ -19,6 +19,16 @@ class QuickOpenSuggestionsTableViewController: NSViewController {
     @IBOutlet weak var suggestionsTableView: NSTableView!
     @IBOutlet var suggestionsScrollView: NSScrollView!
 
+    var testData = ["someFile.swift", "someOtherFile.swift", "thirdFile.swift"]
+    let suggestionRowHeight = 30
+    // Small margin, enough to hide the scrollbar.
+    let suggestionMargin = 3
+    // The maximum number of suggestions shown without scrolling.
+    let maximumSuggestions = 6
+    var maximumSuggestionHeight: Int {
+        return maximumSuggestions * suggestionRowHeight
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -28,13 +38,20 @@ class QuickOpenSuggestionsTableViewController: NSViewController {
         suggestionsTableView.delegate = self
         suggestionsTableView.target = self
 
-        suggestionsScrollView.setFrameSize(NSSize(width: suggestionsScrollView.frame.width, height: 100))
+        resizeTableView()
     }
 
     // Force table view to load all of its views on awake from nib.
     override func awakeFromNib() {
         super.awakeFromNib()
         _ = self.view
+    }
+
+    // Resizes table view to fit suggestions.
+    func resizeTableView() {
+        let suggestionFrameHeight = min(testData.count * suggestionRowHeight + suggestionMargin, maximumSuggestionHeight)
+        let suggestionFrameSize = NSSize(width: suggestionsScrollView.frame.width, height: CGFloat(suggestionFrameHeight))
+        suggestionsScrollView.setFrameSize(suggestionFrameSize)
     }
 }
 
@@ -45,7 +62,7 @@ extension QuickOpenSuggestionsTableViewController: NSTableViewDelegate, NSTableV
     }
 
     func numberOfRows(in tableView: NSTableView) -> Int {
-        return 1
+        return testData.count
     }
 
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
@@ -53,7 +70,7 @@ extension QuickOpenSuggestionsTableViewController: NSTableViewDelegate, NSTableV
         var cellIdentifier = ""
 
         if tableColumn == tableView.tableColumns[0] {
-            text = "SomeQuickOpenSuggestion.swift"
+            text = testData[row]
             cellIdentifier = CellIdentifiers.FilenameCell
         }
 
