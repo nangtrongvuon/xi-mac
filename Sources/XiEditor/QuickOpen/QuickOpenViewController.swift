@@ -59,6 +59,7 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
     func clearSuggestionsFromSearchField() {
         inputSearchField.stringValue = ""
         self.view.window?.removeChildWindow(suggestionWindowController.window!)
+        suggestionWindowController.window!.close()
     }
 
     /// Attaches the suggestion table view to the search field.

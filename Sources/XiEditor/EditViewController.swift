@@ -580,22 +580,8 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Qu
     }
 
     @objc func showQuickOpen(_ sender: Any?) {
+        document.sendRpcAsync("show_quick_open", params: [])
         showQuickOpenSuggestions()
-    }
-
-    fileprivate func cutCopy(_ method: String) {
-        if let result = document?.sendRpc(method, params: []) {
-            switch result {
-            case .ok(let text):
-                if let text = text as? String {
-                    let pasteboard = NSPasteboard.general
-                    pasteboard.clearContents()
-                    pasteboard.writeObjects([text as NSPasteboardWriting])
-                }
-            case .error(let err):
-                print("cut/copy failed: \(err)")
-            }
-        }
     }
 
     @objc func paste(_ sender: AnyObject?) {
