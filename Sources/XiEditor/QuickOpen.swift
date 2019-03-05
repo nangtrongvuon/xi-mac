@@ -14,6 +14,113 @@
 
 import Cocoa
 
+// MARK: Utility Classes
+class QuickOpenTableView: NSTableView {
+    override var needsPanelToBecomeKey: Bool { return true }
+    override var acceptsFirstResponder: Bool { return true }
+}
+
+class QuickOpenSuggestionCellView: NSTableCellView {
+    @IBOutlet weak var filenameTextField: NSTextField!
+}
+
+// MARK: Quick Open Window Handling
+class QuickOpenPanel: NSPanel {
+    // Required to receive keyboard input and events.
+    override var canBecomeKey: Bool {
+        return true
+    }
+}
+
+class QuickOpenSuggestionsWindowController: NSWindowController {
+
+    override init(window: NSWindow?) {
+        super.init(window: window)
+        if let panel = window as? NSPanel {
+            panel.styleMask = [.nonactivatingPanel, .borderless]
+            panel.isOpaque = false
+            panel.level = .floating
+            panel.hidesOnDeactivate = true
+            panel.becomesKeyOnlyIfNeeded = true
+            panel.backgroundColor = .clear
+        }
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+
+// MARK: Suggestions Table View Controller
+class QuickOpenSuggestionsTableViewController: NSViewController {
+
+    @IBOutlet weak var suggestionsTableView: QuickOpenTableView!
+    @IBOutlet var suggestionsScrollView: NSScrollView!
+
+    var testData = ["someFile.swift", "someOtherFile.swift", "thirdFile.swift"]
+    let suggestionRowHeight = 30
+    // Small margin, enough to hide the scrollbar.
+    let suggestionMargin = 3
+    // The maximum number of suggestions shown without scrolling.
+    let maximumSuggestions = 6
+    var maximumSuggestionHeight: Int {
+        return maximumSuggestions * suggestionRowHeight
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        suggestionsTableView.wantsLayer = true
+        suggestionsTableView.focusRingType = .none
+        suggestionsTableView.dataSource = self
+        suggestionsTableView.delegate = self
+        suggestionsTableView.target = self
+
+        resizeTableView()
+    }
+
+    // Force table view to load all of its views on awake from nib.
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        _ = self.view
+    }
+
+    // Resizes table view to fit suggestions.
+    func resizeTableView() {
+        let suggestionFrameHeight = min(testData.count * suggestionRowHeight + suggestionMargin, maximumSuggestionHeight)
+        let suggestionFrameSize = NSSize(width: suggestionsScrollView.frame.width, height: CGFloat(suggestionFrameHeight))
+        suggestionsScrollView.setFrameSize(suggestionFrameSize)
+    }
+}
+
+extension QuickOpenSuggestionsTableViewController: NSTableViewDelegate, NSTableViewDataSource {
+
+    fileprivate enum CellIdentifiers {
+        static let FilenameCell = "FilenameCellID"
+    }
+
+    func numberOfRows(in tableView: NSTableView) -> Int {
+        return testData.count
+    }
+
+    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
+        var text = ""
+        var cellIdentifier = ""
+
+        if tableColumn == tableView.tableColumns[0] {
+            text = testData[row]
+            cellIdentifier = CellIdentifiers.FilenameCell
+        }
+
+        if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: cellIdentifier), owner: nil) as? QuickOpenSuggestionCellView {
+            cell.filenameTextField.stringValue = text
+            return cell
+        }
+        return nil
+    }
+}
+
+
 protocol QuickOpenDelegate: class {
     func showQuickOpenSuggestions()
     func selectedQuickOpenSuggestion(atIndex index: Int)
@@ -43,7 +150,7 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
 
     // MARK: - Suggestion Management
     func showSuggestionsForSearchField() {
-        /// Attachs the suggestion table view to the top left corner of the search field.
+        // Attachs the suggestion table view to the top left corner of the search field.
         var screenRect = self.inputSearchField.convert(self.inputSearchField.frame, to: nil)
         screenRect = (self.view.window?.convertToScreen(screenRect))!
 
@@ -62,32 +169,32 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
         suggestionWindowController.window!.close()
     }
 
-    /// Attaches the suggestion table view to the search field.
+    // Attaches the suggestion table view to the search field.
     override func controlTextDidBeginEditing(_ obj: Notification) {
         showSuggestionsForSearchField()
     }
 
     // MARK: - Handle panel commands
-    /// Closes panel when clicking outside of it.
+    // Closes panel when clicking outside of it.
     override func mouseDown(with event: NSEvent) {
         clearSuggestionsFromSearchField()
         quickOpenDelegate.closeQuickOpenSuggestions()
     }
 
-    /// Overrides keyboard commands when the quick open panel is currently showing.
-    /// Not very elegant, but it does the job for now.
+    // Overrides keyboard commands when the quick open panel is currently showing.
+    // Not very elegant, but it does the job for now.
     func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
         switch commandSelector {
-        /// ESC
+        // ESC
         case #selector(cancelOperation(_:)):
             clearSuggestionsFromSearchField()
             quickOpenDelegate.closeQuickOpenSuggestions()
             return true
-        /// Up/Down
+        // Up/Down
         case #selector(moveUp(_:)), #selector(moveDown(_:)):
             self.suggestionsTableView.keyDown(with: NSApp.currentEvent!)
             return true
-        /// Return/Enter
+        // Return/Enter
         case #selector(insertNewline(_:)):
             quickOpenDelegate.selectedQuickOpenSuggestion(atIndex: self.suggestionsTableView.selectedRow)
             return true
@@ -98,7 +205,7 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
 }
 
 extension EditViewController {
-    /// QuickOpenDelegate
+    // QuickOpenDelegate
     func showQuickOpenSuggestions() {
         editView.window?.beginSheet(quickOpenPanel, completionHandler: nil)
     }
