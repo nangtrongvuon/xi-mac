@@ -492,42 +492,55 @@ Gw
         <scene sceneID="tlx-13-xfq">
             <objects>
                 <viewController title="Quick Open Controller" storyboardIdentifier="Quick Open View Controller" id="Zcy-7W-qQz" customClass="QuickOpenViewController" customModule="XiEditor" customModuleProvider="target" sceneMemberID="viewController">
-                    <searchField key="view" wantsLayer="YES" verticalHuggingPriority="750" textCompletion="NO" id="Qfx-me-DLu">
-                        <rect key="frame" x="0.0" y="0.0" width="450" height="22"/>
+                    <customView key="view" id="gwH-ho-q7u">
+                        <rect key="frame" x="0.0" y="0.0" width="450" height="30"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" id="bxd-Tg-OQC">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                        </searchFieldCell>
-                    </searchField>
+                        <subviews>
+                            <searchField wantsLayer="YES" focusRingType="none" verticalHuggingPriority="750" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Qfx-me-DLu">
+                                <rect key="frame" x="0.0" y="0.0" width="450" height="30"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="30" id="Uv4-qQ-GXf"/>
+                                </constraints>
+                                <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" focusRingType="none" alignment="left" usesSingleLineMode="YES" bezelStyle="round" id="bxd-Tg-OQC">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </searchFieldCell>
+                            </searchField>
+                        </subviews>
+                        <constraints>
+                            <constraint firstItem="Qfx-me-DLu" firstAttribute="top" secondItem="gwH-ho-q7u" secondAttribute="top" id="6Mu-iQ-Tw4"/>
+                            <constraint firstItem="Qfx-me-DLu" firstAttribute="centerX" secondItem="gwH-ho-q7u" secondAttribute="centerX" id="7Yq-ck-1Lj"/>
+                            <constraint firstItem="Qfx-me-DLu" firstAttribute="width" secondItem="gwH-ho-q7u" secondAttribute="width" id="VSf-vs-htE"/>
+                        </constraints>
+                    </customView>
                     <connections>
                         <outlet property="inputSearchField" destination="Qfx-me-DLu" id="wcz-7c-SAT"/>
                     </connections>
                 </viewController>
                 <customObject id="5sT-5t-72r" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="952" y="363"/>
+            <point key="canvasLocation" x="939" y="309"/>
         </scene>
         <!--Quick Open Suggestions Table View Controller-->
         <scene sceneID="G2z-4e-TkA">
             <objects>
                 <viewController storyboardIdentifier="Quick Open Suggestions Table View Controller" id="frr-1G-HXA" customClass="QuickOpenSuggestionsTableViewController" customModule="XiEditor" customModuleProvider="target" sceneMemberID="viewController">
-                    <scrollView key="view" autohidesScrollers="YES" horizontalLineScroll="30" horizontalPageScroll="10" verticalLineScroll="30" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="qt5-Nu-dBn">
-                        <rect key="frame" x="0.0" y="0.0" width="477" height="300"/>
+                    <scrollView key="view" borderType="none" autohidesScrollers="YES" horizontalLineScroll="30" horizontalPageScroll="10" verticalLineScroll="30" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="qt5-Nu-dBn">
+                        <rect key="frame" x="0.0" y="0.0" width="450" height="300"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <clipView key="contentView" id="8YJ-Ra-wLt">
-                            <rect key="frame" x="1" y="1" width="475" height="298"/>
+                        <clipView key="contentView" copiesOnScroll="NO" id="8YJ-Ra-wLt">
+                            <rect key="frame" x="0.0" y="0.0" width="450" height="300"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
                                 <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" rowHeight="20" viewBased="YES" id="JH0-PX-NSj" customClass="QuickOpenTableView" customModule="XiEditor" customModuleProvider="target">
-                                    <rect key="frame" x="0.0" y="0.0" width="475" height="298"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="450" height="300"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <size key="intercellSpacing" width="3" height="10"/>
                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                     <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                     <tableColumns>
-                                        <tableColumn width="472" minWidth="40" maxWidth="1000" id="O95-sj-EwE">
+                                        <tableColumn width="447" minWidth="40" maxWidth="1000" id="O95-sj-EwE">
                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border">
                                                 <font key="font" metaFont="smallSystem"/>
                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -541,11 +554,11 @@ Gw
                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES"/>
                                             <prototypeCellViews>
                                                 <tableCellView identifier="FilenameCellID" id="iVS-yN-v1I" customClass="QuickOpenSuggestionCellView" customModule="XiEditor" customModuleProvider="target">
-                                                    <rect key="frame" x="1" y="5" width="472" height="17"/>
+                                                    <rect key="frame" x="1" y="5" width="447" height="17"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <subviews>
                                                         <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="yzb-XY-VMn">
-                                                            <rect key="frame" x="0.0" y="0.0" width="472" height="17"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="447" height="17"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                                             <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Theme.swift" id="cMb-WH-R2e">
                                                                 <font key="font" metaFont="system"/>
@@ -580,7 +593,7 @@ Gw
                 </viewController>
                 <customObject id="AU4-Lg-Rps" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="952.5" y="579"/>
+            <point key="canvasLocation" x="939" y="578"/>
         </scene>
         <!--Application-->
         <scene sceneID="uLn-e8-8sb">

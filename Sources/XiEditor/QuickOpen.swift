@@ -17,7 +17,7 @@ import Cocoa
 // MARK: Utility Classes
 class QuickOpenTableView: NSTableView {
     override var needsPanelToBecomeKey: Bool { return true }
-    override var acceptsFirstResponder: Bool { return true }
+    override var acceptsFirstResponder: Bool { return false }
 }
 
 class QuickOpenSuggestionCellView: NSTableCellView {
@@ -26,28 +26,19 @@ class QuickOpenSuggestionCellView: NSTableCellView {
 
 // MARK: Quick Open Window Handling
 class QuickOpenPanel: NSPanel {
+    var quickOpenViewController: QuickOpenViewController? {
+        return self.contentViewController as? QuickOpenViewController
+    }
+
     // Required to receive keyboard input and events.
     override var canBecomeKey: Bool {
         return true
     }
-}
 
-class QuickOpenSuggestionsWindowController: NSWindowController {
-
-    override init(window: NSWindow?) {
-        super.init(window: window)
-        if let panel = window as? NSPanel {
-            panel.styleMask = [.nonactivatingPanel, .borderless]
-            panel.isOpaque = false
-            panel.level = .floating
-            panel.hidesOnDeactivate = true
-            panel.becomesKeyOnlyIfNeeded = true
-            panel.backgroundColor = .clear
-        }
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    // Closes quick open panel immediately when losing focus.
+    override func resignKey() {
+        quickOpenViewController?.clearSuggestionsFromSearchField()
+        self.close()
     }
 }
 
@@ -70,11 +61,15 @@ class QuickOpenSuggestionsTableViewController: NSViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        suggestionsTableView.wantsLayer = true
         suggestionsTableView.focusRingType = .none
         suggestionsTableView.dataSource = self
         suggestionsTableView.delegate = self
         suggestionsTableView.target = self
+
+        suggestionsTableView.wantsLayer = true
+        suggestionsTableView.layer?.cornerRadius = 5
+        suggestionsTableView.enclosingScrollView?.wantsLayer = true
+        suggestionsTableView.enclosingScrollView?.layer?.cornerRadius = 5
 
         resizeTableView()
     }
@@ -101,6 +96,15 @@ extension QuickOpenSuggestionsTableViewController: NSTableViewDelegate, NSTableV
 
     func numberOfRows(in tableView: NSTableView) -> Int {
         return testData.count
+    }
+
+    // Prevents gray highlights on the non-focused suggestion table view.
+    func tableViewSelectionDidChange(_ notification: Notification) {
+        let selectedRow = suggestionsTableView.selectedRow
+        if let rowView = suggestionsTableView.rowView(atRow: selectedRow, makeIfNecessary: false) {
+            rowView.selectionHighlightStyle = .regular
+            rowView.isEmphasized = true
+        }
     }
 
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
@@ -131,21 +135,16 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
 
     @IBOutlet weak var inputSearchField: NSSearchField!
     weak var quickOpenDelegate: QuickOpenDelegate!
-    var suggestionWindowController: QuickOpenSuggestionsWindowController!
     var suggestionTableViewController: QuickOpenSuggestionsTableViewController!
     var suggestionsTableView: QuickOpenTableView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do view setup here.
-        inputSearchField.delegate = self
 
         let storyboard = NSStoryboard(name: NSStoryboard.Name(rawValue: "Main"), bundle: nil)
         suggestionTableViewController = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "Quick Open Suggestions Table View Controller")) as? QuickOpenSuggestionsTableViewController
         suggestionsTableView = suggestionTableViewController.suggestionsTableView
-
-        let panel = NSPanel(contentViewController: suggestionTableViewController)
-        suggestionWindowController = QuickOpenSuggestionsWindowController(window: panel)
+        inputSearchField.delegate = self
     }
 
     // MARK: - Suggestion Management
@@ -153,32 +152,21 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
         // Attachs the suggestion table view to the top left corner of the search field.
         var screenRect = self.inputSearchField.convert(self.inputSearchField.frame, to: nil)
         screenRect = (self.view.window?.convertToScreen(screenRect))!
-
-        let windowRect = NSRect(origin: .zero, size: CGSize(width: inputSearchField.frame.width, height: suggestionWindowController.window!.frame.height))
-
-        suggestionWindowController.window!.setFrame(windowRect, display: false)
-        suggestionWindowController.window!.setFrameTopLeftPoint(screenRect.origin)
-        suggestionTableViewController.resizeTableView()
-
-        self.view.window?.addChildWindow(suggestionWindowController.window!, ordered: .above)
+        let suggestionSize = NSSize(width: suggestionsTableView.frame.width, height: suggestionsTableView.frame.height + 30)
+        self.view.window?.setContentSize(suggestionSize)
+        self.view.addSubview(suggestionTableViewController.view)
     }
 
     func clearSuggestionsFromSearchField() {
         inputSearchField.stringValue = ""
-        self.view.window?.removeChildWindow(suggestionWindowController.window!)
-        suggestionWindowController.window!.close()
+        suggestionTableViewController.view.removeFromSuperview()
+        let suggestionSize = NSSize(width: suggestionsTableView.frame.width, height: 30)
+        self.view.window?.setContentSize(suggestionSize)
     }
 
     // Attaches the suggestion table view to the search field.
     override func controlTextDidBeginEditing(_ obj: Notification) {
         showSuggestionsForSearchField()
-    }
-
-    // MARK: - Handle panel commands
-    // Closes panel when clicking outside of it.
-    override func mouseDown(with event: NSEvent) {
-        clearSuggestionsFromSearchField()
-        quickOpenDelegate.closeQuickOpenSuggestions()
     }
 
     // Overrides keyboard commands when the quick open panel is currently showing.
@@ -196,7 +184,7 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
             return true
         // Return/Enter
         case #selector(insertNewline(_:)):
-            quickOpenDelegate.selectedQuickOpenSuggestion(atIndex: self.suggestionsTableView.selectedRow)
+            quickOpenDelegate?.selectedQuickOpenSuggestion(atIndex: self.suggestionsTableView.selectedRow)
             return true
         default:
             return false
@@ -207,6 +195,11 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
 extension EditViewController {
     // QuickOpenDelegate
     func showQuickOpenSuggestions() {
+        quickOpenPanel = QuickOpenPanel(contentViewController: quickOpenViewController)
+        quickOpenPanel.worksWhenModal = true
+        quickOpenPanel.becomesKeyOnlyIfNeeded = true
+        quickOpenPanel.styleMask = [.utilityWindow]
+        quickOpenPanel.backgroundColor = .clear
         editView.window?.beginSheet(quickOpenPanel, completionHandler: nil)
     }
 
@@ -215,6 +208,8 @@ extension EditViewController {
     }
 
     func closeQuickOpenSuggestions() {
+        // Cleanup on close or something
         editView.window?.endSheet(quickOpenPanel)
+        print("quick open closed")
     }
 }

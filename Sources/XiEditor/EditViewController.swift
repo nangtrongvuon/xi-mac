@@ -101,7 +101,12 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Qu
         return controller
     }()
 
-
+    lazy var quickOpenViewController: QuickOpenViewController! = {
+        let storyboard = NSStoryboard(name: NSStoryboard.Name(rawValue: "Main"), bundle: nil)
+        let controller = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "Quick Open View Controller")) as! QuickOpenViewController
+        controller.quickOpenDelegate = self
+        return controller
+    }()
 
     var document: Document!
 
@@ -248,12 +253,6 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Qu
     var hoverRequestID = 0
 
     var quickOpenPanel: QuickOpenPanel!
-    lazy var quickOpenViewController: QuickOpenViewController! = {
-        let storyboard = NSStoryboard(name: NSStoryboard.Name(rawValue: "Main"), bundle: nil)
-        let controller = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "Quick Open View Controller")) as! QuickOpenViewController
-        controller.quickOpenDelegate = self
-        return controller
-    }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -271,7 +270,6 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Qu
     override func viewDidAppear() {
         super.viewDidAppear()
         setupStatusBar()
-        setupQuickOpen()
         shadowView.setup()
         NotificationCenter.default.addObserver(self, selector: #selector(frameDidChangeNotification), name: NSView.frameDidChangeNotification, object: scrollView)
         // call to set initial scroll position once we know view size
@@ -285,14 +283,6 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Qu
 
     func setupStatusBar() {
         statusBar.hasUnifiedTitlebar = unifiedTitlebar
-    }
-
-    func setupQuickOpen() {
-        quickOpenPanel = QuickOpenPanel(contentViewController: quickOpenViewController)
-        quickOpenPanel.worksWhenModal = true
-        quickOpenPanel.hidesOnDeactivate = true
-        quickOpenPanel.becomesKeyOnlyIfNeeded = true
-        quickOpenPanel.styleMask = [.nonactivatingPanel]
     }
 
     func updateGutterWidth() {
@@ -482,18 +472,7 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Qu
             self.perform(aSelector, with: self)
         } else {
             // Forwards key events to completion view if in mid completion
-            if (quickOpenPanel.isVisible) {
-                switch aSelector {
-                case #selector(moveUp(_:)):
-                    quickOpenViewController.moveUp(self)
-                case #selector(moveDown(_:)):
-                    quickOpenViewController.moveDown(self)
-                case #selector(insertNewline(_:)):
-                    quickOpenViewController.insertNewline(self)
-                default:
-                    break
-                }
-            } else if let commandName = EditViewController.selectorToCommand[aSelector.description] {
+            if let commandName = EditViewController.selectorToCommand[aSelector.description] {
                 document.sendRpcAsync(commandName, params: [])
             } else {
                 Swift.print("Unhandled selector: \(aSelector.description)")
@@ -648,7 +627,6 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Qu
             editView.window?.makeFirstResponder(editView)
         }
         infoPopover.performClose(self)
-        editView.window?.endSheet(quickOpenPanel)
         editView.unmarkText()
         editView.inputContext?.discardMarkedText()
         let position = editView.bufferPositionFromPoint(theEvent.locationInWindow)
