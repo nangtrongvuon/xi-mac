@@ -74,6 +74,12 @@ protocol XiViewProxy: class {
     func indent()
     func outdent()
     func reindent()
+
+    /// quick open calls
+    /// Starts a new quick open session.
+    func initiateQuickOpenSession()
+    /// Sends a request for quick open completions to core.
+    func sendQuickOpenRequest(query: String)
 }
 
 final class XiViewConnection: XiViewProxy {
@@ -237,6 +243,14 @@ final class XiViewConnection: XiViewProxy {
 
     func deleteBackward() {
         sendRpcAsync("delete_backward", params: [])
+    }
+
+    func initiateQuickOpenSession() {
+        sendRpcAsync("initiate_quick_open_session", params: [])
+    }
+
+    func sendQuickOpenRequest(query: String) {
+        sendRpcAsync("request_quick_open_completion", params: ["query": query])
     }
 
     private func sendRpcAsync(_ method: String, params: Any, callback: RpcCallback? = nil) {

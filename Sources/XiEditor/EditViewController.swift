@@ -558,9 +558,9 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Qu
         xiView.clearRecording(name: "DEFAULT")
     }
 
-    @objc func showQuickOpen(_ sender: Any?) {
-        document.sendRpcAsync("show_quick_open", params: [])
-        showQuickOpenSuggestions()
+    @objc func initiateQuickOpenSession(_ sender: Any?) {
+        xiView.initiateQuickOpenSession()
+        activateQuickOpenPanel()
     }
 
     @objc func paste(_ sender: AnyObject?) {

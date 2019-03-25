@@ -676,7 +676,7 @@ Gw
                                         </menuItem>
                                         <menuItem title="Quick Open" keyEquivalent="O" id="cEb-aB-QND">
                                             <connections>
-                                                <action selector="showQuickOpen:" target="7er-QZ-amI" id="CFp-CC-XLi"/>
+                                                <action selector="initiateQuickOpenSession:" target="7er-QZ-amI" id="SPJ-ZZ-7ZX"/>
                                             </connections>
                                         </menuItem>
                                         <menuItem title="Open Recent" id="2WR-q1-qjS">

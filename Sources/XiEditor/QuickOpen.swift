@@ -38,6 +38,7 @@ class QuickOpenPanel: NSPanel {
     // Closes quick open panel immediately when losing focus.
     override func resignKey() {
         quickOpenViewController?.clearSuggestionsFromSearchField()
+        quickOpenViewController?.quickOpenDelegate.closeQuickOpenSuggestions()
         self.close()
     }
 }
@@ -127,6 +128,8 @@ extension QuickOpenSuggestionsTableViewController: NSTableViewDelegate, NSTableV
 // MARK: - Quick Open View Controller
 
 protocol QuickOpenDelegate: class {
+    func activateQuickOpenPanel()
+    func sendQuickOpenRequest(query: String)
     func showQuickOpenSuggestions()
     func selectedQuickOpenSuggestion(atIndex index: Int)
     func closeQuickOpenSuggestions()
@@ -150,10 +153,7 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
 
     // MARK: Suggestion Management
     func showSuggestionsForSearchField() {
-        // Attachs the suggestion table view to the top left corner of the search field.
-        var screenRect = self.inputSearchField.convert(self.inputSearchField.frame, to: nil)
-        screenRect = (self.view.window?.convertToScreen(screenRect))!
-        let suggestionSize = NSSize(width: suggestionsTableView.frame.width, height: suggestionsTableView.frame.height + 30)
+        let suggestionSize = NSSize(width: suggestionsTableView.frame.width, height: suggestionsTableView.frame.height + inputSearchField.frame.height)
         self.view.window?.setContentSize(suggestionSize)
         self.view.addSubview(suggestionTableViewController.view)
     }
@@ -161,13 +161,18 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
     func clearSuggestionsFromSearchField() {
         inputSearchField.stringValue = ""
         suggestionTableViewController.view.removeFromSuperview()
-        let suggestionSize = NSSize(width: suggestionsTableView.frame.width, height: 30)
+        let suggestionSize = NSSize(width: suggestionsTableView.frame.width, height: inputSearchField.frame.height)
         self.view.window?.setContentSize(suggestionSize)
     }
 
-    // Attaches the suggestion table view to the search field.
-    override func controlTextDidBeginEditing(_ obj: Notification) {
-        showSuggestionsForSearchField()
+    // Refreshes quick open suggestion on type.
+    override func controlTextDidChange(_ obj: Notification) {
+        sendCurrentQuery()
+    }
+
+    @objc func sendCurrentQuery() {
+        let query = self.inputSearchField.stringValue
+        quickOpenDelegate.sendQuickOpenRequest(query: query)
     }
 
     // Overrides keyboard commands when the quick open panel is currently showing.
@@ -195,13 +200,21 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
 
 extension EditViewController {
     // QuickOpenDelegate
-    func showQuickOpenSuggestions() {
+    func activateQuickOpenPanel() {
         quickOpenPanel = QuickOpenPanel(contentViewController: quickOpenViewController)
         quickOpenPanel.worksWhenModal = true
         quickOpenPanel.becomesKeyOnlyIfNeeded = true
         quickOpenPanel.styleMask = [.utilityWindow]
         quickOpenPanel.backgroundColor = .clear
         editView.window?.beginSheet(quickOpenPanel, completionHandler: nil)
+    }
+
+    func sendQuickOpenRequest(query: String) {
+        xiView.sendQuickOpenRequest(query: query)
+    }
+
+    func showQuickOpenSuggestions() {
+        print("do stuff once core sends back stuff")
     }
 
     func selectedQuickOpenSuggestion(atIndex index: Int) {
