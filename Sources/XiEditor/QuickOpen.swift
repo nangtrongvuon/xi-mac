@@ -24,7 +24,7 @@ class QuickOpenSuggestionCellView: NSTableCellView {
     @IBOutlet weak var filenameTextField: NSTextField!
 }
 
-// MARK: Quick Open Window Handling
+// MARK: - Quick Open Window Handling
 class QuickOpenPanel: NSPanel {
     var quickOpenViewController: QuickOpenViewController? {
         return self.contentViewController as? QuickOpenViewController
@@ -42,7 +42,7 @@ class QuickOpenPanel: NSPanel {
     }
 }
 
-// MARK: Suggestions Table View Controller
+// MARK: - Suggestions Table View Controller
 class QuickOpenSuggestionsTableViewController: NSViewController {
 
     @IBOutlet weak var suggestionsTableView: QuickOpenTableView!
@@ -124,6 +124,7 @@ extension QuickOpenSuggestionsTableViewController: NSTableViewDelegate, NSTableV
     }
 }
 
+// MARK: - Quick Open View Controller
 
 protocol QuickOpenDelegate: class {
     func showQuickOpenSuggestions()
@@ -147,7 +148,7 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
         inputSearchField.delegate = self
     }
 
-    // MARK: - Suggestion Management
+    // MARK: Suggestion Management
     func showSuggestionsForSearchField() {
         // Attachs the suggestion table view to the top left corner of the search field.
         var screenRect = self.inputSearchField.convert(self.inputSearchField.frame, to: nil)
