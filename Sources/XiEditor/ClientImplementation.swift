@@ -213,6 +213,13 @@ class ClientImplementation: XiClient, DocumentsProviding, ConfigCacheProviding, 
         }
     }
 
+    func showQuickOpenCompletions(viewIdentifier: String, completions: [[String : AnyObject]]) {
+        let document = documentForViewIdentifier(viewIdentifier: viewIdentifier)
+        DispatchQueue.main.async {
+            document?.editViewController?.quickOpenViewController.showSuggestionsForSearchField()
+        }
+    }
+
     //- MARK: - helpers
 
     /// returns the NSDocument corresponding to the given viewIdentifier
