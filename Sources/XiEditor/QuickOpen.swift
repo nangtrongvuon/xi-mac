@@ -65,29 +65,38 @@ class QuickOpenSuggestionsTableViewController: NSViewController {
     @IBOutlet var suggestionsScrollView: NSScrollView!
 
     var testData = ["someFile.swift", "someOtherFile.swift", "thirdFile.swift"]
-    fileprivate var completions = [FuzzyCompletion]()
-    let suggestionRowHeight = 30
+    fileprivate var completions = [FuzzyCompletion]() {
+        didSet {
+            suggestionsTableView.reloadData()
+            resizeTableView()
+        }
+    }
+
+    // The current height of the suggestions table view.
+    // This can go up to the `maximumSuggestionHeight` defined below.
+    var suggestionFrameHeight: CGFloat = 0
+    var maximumSuggestionHeight: CGFloat {
+        return CGFloat(maximumSuggestions) * suggestionRowHeight
+    }
+    // Height for each row in the suggestion table view.
+    let suggestionRowHeight: CGFloat = 30
     // Small margin, enough to hide the scrollbar.
-    let suggestionMargin = 3
+    let suggestionMargin: CGFloat = 3
     // The maximum number of suggestions shown without scrolling.
     let maximumSuggestions = 6
-    var maximumSuggestionHeight: Int {
-        return maximumSuggestions * suggestionRowHeight
-    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         suggestionsTableView.focusRingType = .none
         suggestionsTableView.delegate = self
+        suggestionsTableView.dataSource = self
         suggestionsTableView.target = self
 
         suggestionsTableView.wantsLayer = true
         suggestionsTableView.layer?.cornerRadius = 5
         suggestionsTableView.enclosingScrollView?.wantsLayer = true
         suggestionsTableView.enclosingScrollView?.layer?.cornerRadius = 5
-
-        resizeTableView()
     }
 
     // Force table view to load all of its views on awake from nib.
@@ -98,8 +107,8 @@ class QuickOpenSuggestionsTableViewController: NSViewController {
 
     // Resizes table view to fit suggestions.
     func resizeTableView() {
-        let suggestionFrameHeight = min(testData.count * suggestionRowHeight + suggestionMargin, maximumSuggestionHeight)
-        let suggestionFrameSize = NSSize(width: suggestionsScrollView.frame.width, height: CGFloat(suggestionFrameHeight))
+        suggestionFrameHeight = min(CGFloat(completions.count) * suggestionRowHeight + suggestionMargin, maximumSuggestionHeight)
+        let suggestionFrameSize = NSSize(width: suggestionsScrollView.frame.width, height: suggestionFrameHeight)
         suggestionsScrollView.setFrameSize(suggestionFrameSize)
     }
 }
@@ -170,14 +179,15 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
     weak var quickOpenDelegate: QuickOpenDelegate!
     let quickOpenManager = QuickOpenManager()
     var suggestionTableViewController: QuickOpenSuggestionsTableViewController!
-    var suggestionsTableView: QuickOpenTableView!
+    var suggestionsTableView: QuickOpenTableView {
+        return suggestionTableViewController.suggestionsTableView
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         let storyboard = NSStoryboard(name: NSStoryboard.Name(rawValue: "Main"), bundle: nil)
         suggestionTableViewController = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "Quick Open Suggestions Table View Controller")) as? QuickOpenSuggestionsTableViewController
-        suggestionsTableView = suggestionTableViewController.suggestionsTableView
         inputSearchField.delegate = self
     }
 
@@ -189,7 +199,7 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
     }
 
     func showSuggestionsForSearchField() {
-        let suggestionSize = NSSize(width: suggestionsTableView.frame.width, height: suggestionsTableView.frame.height + inputSearchField.frame.height)
+        let suggestionSize = NSSize(width: suggestionsTableView.frame.width, height: suggestionTableViewController.suggestionFrameHeight + inputSearchField.frame.height)
         self.view.window?.setContentSize(suggestionSize)
         self.view.addSubview(suggestionTableViewController.view)
     }
@@ -216,10 +226,10 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
     func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
         switch commandSelector {
         // ESC
-//        case #selector(cancelOperation(_:)):
-//            clearSuggestionsFromSearchField()
-//            quickOpenDelegate.closeQuickOpenSuggestions()
-//            return true
+        case #selector(cancelOperation(_:)):
+            clearSuggestionsFromSearchField()
+            quickOpenDelegate.closeQuickOpenSuggestions()
+            return true
         // Up/Down
         case #selector(moveUp(_:)), #selector(moveDown(_:)):
             self.suggestionsTableView.keyDown(with: NSApp.currentEvent!)

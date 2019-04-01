@@ -248,7 +248,6 @@ final class XiViewConnection: XiViewProxy {
     func initiateQuickOpenSession() {
         sendRpcAsync("initiate_quick_open_session", params: [])
     }
-
     func sendQuickOpenRequest(query: String) {
         sendRpcAsync("request_quick_open_completion", params: ["query": query])
     }
