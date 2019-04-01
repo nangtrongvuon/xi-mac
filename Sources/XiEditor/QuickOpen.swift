@@ -50,9 +50,12 @@ class QuickOpenPanel: NSPanel {
 
     // Closes quick open panel immediately when losing focus.
     override func resignKey() {
-        quickOpenViewController?.clearSuggestionsFromSearchField()
-        quickOpenViewController?.quickOpenDelegate.closeQuickOpenSuggestions()
-        self.close()
+        // Avoids double calling the cleanup methods - closing the panel seems to call
+        // `resignKey` again.
+        if self.isVisible {
+            quickOpenViewController?.clearSuggestionsFromSearchField()
+            quickOpenViewController?.quickOpenDelegate.closeQuickOpenSuggestions()
+        }
     }
 }
 
@@ -213,10 +216,10 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
     func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
         switch commandSelector {
         // ESC
-        case #selector(cancelOperation(_:)):
-            clearSuggestionsFromSearchField()
-            quickOpenDelegate.closeQuickOpenSuggestions()
-            return true
+//        case #selector(cancelOperation(_:)):
+//            clearSuggestionsFromSearchField()
+//            quickOpenDelegate.closeQuickOpenSuggestions()
+//            return true
         // Up/Down
         case #selector(moveUp(_:)), #selector(moveDown(_:)):
             self.suggestionsTableView.keyDown(with: NSApp.currentEvent!)
@@ -234,13 +237,7 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
 // MARK: QuickOpenDelegate
 extension EditViewController {
     func activateQuickOpenPanel() {
-        quickOpenPanel = QuickOpenPanel(contentViewController: quickOpenViewController)
-        quickOpenPanel.worksWhenModal = true
-        quickOpenPanel.becomesKeyOnlyIfNeeded = true
-        quickOpenPanel.styleMask = [.utilityWindow]
-        quickOpenPanel.backgroundColor = .clear
         editView.window?.beginSheet(quickOpenPanel, completionHandler: nil)
-        xiView.initiateQuickOpenSession()
     }
 
     func sendQuickOpenRequest(query: String) {

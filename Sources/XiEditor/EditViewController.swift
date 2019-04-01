@@ -270,6 +270,7 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Qu
     override func viewDidAppear() {
         super.viewDidAppear()
         setupStatusBar()
+        setupQuickOpenPanel()
         shadowView.setup()
         NotificationCenter.default.addObserver(self, selector: #selector(frameDidChangeNotification), name: NSView.frameDidChangeNotification, object: scrollView)
         // call to set initial scroll position once we know view size
@@ -283,6 +284,14 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Qu
 
     func setupStatusBar() {
         statusBar.hasUnifiedTitlebar = unifiedTitlebar
+    }
+
+    func setupQuickOpenPanel() {
+        quickOpenPanel = QuickOpenPanel(contentViewController: quickOpenViewController)
+        quickOpenPanel.worksWhenModal = true
+        quickOpenPanel.becomesKeyOnlyIfNeeded = true
+        quickOpenPanel.styleMask = [.docModalWindow]
+        quickOpenPanel.backgroundColor = .clear
     }
 
     func updateGutterWidth() {
