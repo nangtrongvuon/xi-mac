@@ -290,7 +290,10 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Qu
         quickOpenPanel = QuickOpenPanel(contentViewController: quickOpenViewController)
         quickOpenPanel.worksWhenModal = true
         quickOpenPanel.becomesKeyOnlyIfNeeded = true
-        quickOpenPanel.styleMask = [.docModalWindow]
+        quickOpenPanel.styleMask = [.borderless]
+        quickOpenPanel.contentView!.wantsLayer = true
+        quickOpenPanel.contentView!.layer!.cornerRadius = 6
+        quickOpenPanel.isOpaque = true
         quickOpenPanel.backgroundColor = .clear
     }
 

@@ -20,8 +20,17 @@ class QuickOpenTableView: NSTableView {
     override var acceptsFirstResponder: Bool { return false }
 }
 
-class QuickOpenSuggestionCellView: NSTableCellView {
-    @IBOutlet weak var filenameTextField: NSTextField!
+class QuickOpenSuggestionRowView: NSTableRowView {
+    @IBOutlet weak var fileNameLabel: NSTextField!
+    @IBOutlet weak var fullPathLabel: NSTextField!
+
+    // Keeps the focused color on our table view, since we don't actually focus on it.
+    override var isEmphasized: Bool {
+        get { return true }
+        set {
+            // Does nothing
+        }
+    }
 }
 
 // MARK: Protocols
@@ -53,8 +62,8 @@ class QuickOpenPanel: NSPanel {
         // Avoids double calling the cleanup methods - closing the panel seems to call
         // `resignKey` again.
         if self.isVisible {
-            quickOpenViewController?.clearSuggestionsFromSearchField()
-            quickOpenViewController?.quickOpenDelegate.closeQuickOpenSuggestions()
+//            quickOpenViewController?.clearSuggestionsFromSearchField()
+//            quickOpenViewController?.quickOpenDelegate.closeQuickOpenSuggestions()
         }
     }
 }
@@ -79,7 +88,7 @@ class QuickOpenSuggestionsTableViewController: NSViewController {
         return CGFloat(maximumSuggestions) * suggestionRowHeight
     }
     // Height for each row in the suggestion table view.
-    let suggestionRowHeight: CGFloat = 30
+    let suggestionRowHeight: CGFloat = 45
     // Small margin, enough to hide the scrollbar.
     let suggestionMargin: CGFloat = 3
     // The maximum number of suggestions shown without scrolling.
@@ -93,10 +102,8 @@ class QuickOpenSuggestionsTableViewController: NSViewController {
         suggestionsTableView.dataSource = self
         suggestionsTableView.target = self
 
-        suggestionsTableView.wantsLayer = true
-        suggestionsTableView.layer?.cornerRadius = 5
-        suggestionsTableView.enclosingScrollView?.wantsLayer = true
-        suggestionsTableView.enclosingScrollView?.layer?.cornerRadius = 5
+        self.view.wantsLayer = true
+        self.view.layer?.cornerRadius = 6
     }
 
     // Force table view to load all of its views on awake from nib.
@@ -107,7 +114,7 @@ class QuickOpenSuggestionsTableViewController: NSViewController {
 
     // Resizes table view to fit suggestions.
     func resizeTableView() {
-        suggestionFrameHeight = min(CGFloat(completions.count) * suggestionRowHeight + suggestionMargin, maximumSuggestionHeight)
+        suggestionFrameHeight = min(CGFloat(completions.count) * suggestionRowHeight, maximumSuggestionHeight)
         let suggestionFrameSize = NSSize(width: suggestionsScrollView.frame.width, height: suggestionFrameHeight)
         suggestionsScrollView.setFrameSize(suggestionFrameSize)
     }
@@ -123,27 +130,25 @@ extension QuickOpenSuggestionsTableViewController: NSTableViewDelegate, NSTableV
         return completions.count
     }
 
-    // Prevents gray highlights on the non-focused suggestion table view.
-    func tableViewSelectionDidChange(_ notification: Notification) {
-        let selectedRow = suggestionsTableView.selectedRow
-        if let rowView = suggestionsTableView.rowView(atRow: selectedRow, makeIfNecessary: false) {
-            rowView.selectionHighlightStyle = .regular
-            rowView.isEmphasized = true
-        }
+    func tableView(_ tableView: NSTableView, heightOfRow row: Int) -> CGFloat {
+        return suggestionRowHeight
     }
 
-    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
-        var text = ""
-        var cellIdentifier = ""
+    func tableView(_ tableView: NSTableView, rowViewForRow row: Int) -> NSTableRowView? {
+        var fileName = ""
+        var fullPath = ""
+        var rowIdentifier = ""
 
-        if tableColumn == tableView.tableColumns[0] {
-            text = completions[row].path
-            cellIdentifier = CellIdentifiers.FilenameCell
-        }
+        let fileURL = URL(fileURLWithPath: completions[row].path)
+        fullPath = fileURL.relativeString
+        fileName = fileURL.lastPathComponent
+        rowIdentifier = CellIdentifiers.FilenameCell
 
-        if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: cellIdentifier), owner: nil) as? QuickOpenSuggestionCellView {
-            cell.filenameTextField.stringValue = text
-            return cell
+        if let rowView = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: rowIdentifier), owner: nil) as? QuickOpenSuggestionRowView {
+            rowView.fileNameLabel.stringValue = fileName
+            rowView.fullPathLabel.stringValue = fullPath
+            rowView.backgroundColor = .clear
+            return rowView
         }
         return nil
     }
@@ -199,7 +204,7 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
     }
 
     func showSuggestionsForSearchField() {
-        let suggestionSize = NSSize(width: suggestionsTableView.frame.width, height: suggestionTableViewController.suggestionFrameHeight + inputSearchField.frame.height)
+        let suggestionSize = NSSize(width: self.view.frame.width, height: suggestionTableViewController.suggestionFrameHeight + inputSearchField.frame.height)
         self.view.window?.setContentSize(suggestionSize)
         self.view.addSubview(suggestionTableViewController.view)
     }
