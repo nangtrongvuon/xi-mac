@@ -18,6 +18,7 @@ import Cocoa
 class QuickOpenTableView: NSTableView {
     override var needsPanelToBecomeKey: Bool { return true }
     override var acceptsFirstResponder: Bool { return false }
+    override var isFlipped: Bool { return true }
 }
 
 class QuickOpenSuggestionRowView: NSTableRowView {
@@ -27,9 +28,18 @@ class QuickOpenSuggestionRowView: NSTableRowView {
     // Keeps the focused color on our table view rows, since we don't actually focus on it.
     override var isEmphasized: Bool {
         get { return true }
-        set {
-            // Does nothing, just here so we can override the getter
-        }
+        // Does nothing, just here so we can override the getter
+        set { }
+    }
+
+    // Allows us to get some custom highlighting in.
+    override func drawSelection(in dirtyRect: NSRect) {
+        super.drawSelection(in: dirtyRect)
+
+        NSColor.alternateSelectedControlColor.set()
+        let rect = NSRect(x: 0, y: bounds.height - 2, width: bounds.width, height: bounds.height)
+        let path = NSBezierPath(rect: rect)
+        path.fill()
     }
 }
 
@@ -70,38 +80,43 @@ class QuickOpenPanel: NSPanel {
 
 // MARK: - Suggestions Table View Controller
 class QuickOpenSuggestionsTableViewController: NSViewController {
-    @IBOutlet weak var suggestionsTableView: QuickOpenTableView!
+
+    @IBOutlet var suggestionsTableView: QuickOpenTableView!
     @IBOutlet var suggestionsScrollView: NSScrollView!
 
-    var testData = ["someFile.swift", "someOtherFile.swift", "thirdFile.swift"]
     fileprivate var completions = [FuzzyCompletion]() {
         didSet {
-            suggestionsTableView.reloadData()
-            resizeTableView()
+            self.suggestionsTableView.reloadData()
         }
     }
 
-    // The current height of the suggestions table view.
-    // This can go up to the `maximumSuggestionHeight` defined below.
-    var suggestionFrameHeight: CGFloat = 0
+    /// The current height of the suggestions table view.
+    /// This can go up to the `maximumSuggestionHeight` defined below.
+    var suggestionFrameHeight: CGFloat {
+        var calculatedHeight = CGFloat(completions.count) * suggestionRowHeight
+        if calculatedHeight >= maximumSuggestionHeight {
+            calculatedHeight = maximumSuggestionHeight
+        }
+        return calculatedHeight
+    }
+
+    /// Height for each row in the suggestion table view.
+    let suggestionRowHeight: CGFloat = 60
+    /// The maximum number of suggestions shown without scrolling.
+    let maximumSuggestions = 6
+
+    /// The tallest height that the suggestion can be.
+    /// Currently capped to 6, which is similar to other editors.
     var maximumSuggestionHeight: CGFloat {
         return CGFloat(maximumSuggestions) * suggestionRowHeight
     }
-    // Height for each row in the suggestion table view.
-    let suggestionRowHeight: CGFloat = 45
-    // Small margin, enough to hide the scrollbar.
-    let suggestionMargin: CGFloat = 3
-    // The maximum number of suggestions shown without scrolling.
-    let maximumSuggestions = 6
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        suggestionsTableView.focusRingType = .none
-        suggestionsTableView.delegate = self
-        suggestionsTableView.dataSource = self
-        suggestionsTableView.target = self
-
+        self.suggestionsTableView.delegate = self
+        self.suggestionsTableView.dataSource = self
+        self.suggestionsTableView.target = self
         self.view.wantsLayer = true
         self.view.layer?.cornerRadius = 6
     }
@@ -110,13 +125,6 @@ class QuickOpenSuggestionsTableViewController: NSViewController {
     override func awakeFromNib() {
         super.awakeFromNib()
         _ = self.view
-    }
-
-    // Resizes table view to fit suggestions.
-    func resizeTableView() {
-        suggestionFrameHeight = min(CGFloat(completions.count) * suggestionRowHeight, maximumSuggestionHeight)
-        let suggestionFrameSize = NSSize(width: suggestionsScrollView.frame.width, height: suggestionFrameHeight)
-        suggestionsScrollView.setFrameSize(suggestionFrameSize)
     }
 }
 
@@ -128,10 +136,6 @@ extension QuickOpenSuggestionsTableViewController: NSTableViewDelegate, NSTableV
 
     func numberOfRows(in tableView: NSTableView) -> Int {
         return completions.count
-    }
-
-    func tableView(_ tableView: NSTableView, heightOfRow row: Int) -> CGFloat {
-        return suggestionRowHeight
     }
 
     func tableView(_ tableView: NSTableView, rowViewForRow row: Int) -> NSTableRowView? {
@@ -147,7 +151,7 @@ extension QuickOpenSuggestionsTableViewController: NSTableViewDelegate, NSTableV
         if let rowView = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: rowIdentifier), owner: nil) as? QuickOpenSuggestionRowView {
             rowView.fileNameLabel.stringValue = fileName
             rowView.fullPathLabel.stringValue = fullPath
-            rowView.backgroundColor = .clear
+//            rowView.backgroundColor = .clear
             return rowView
         }
         return nil
@@ -156,13 +160,13 @@ extension QuickOpenSuggestionsTableViewController: NSTableViewDelegate, NSTableV
 
 // MARK: - Quick Open Manager
 
-// A possible quick open completion.
+/// A possible quick open completion.
 struct FuzzyCompletion {
     let path: String
     let score: Int
 }
 
-// Handles quick open data and states.
+/// Handles quick open data and states.
 class QuickOpenManager {
     var currentCompletions = [FuzzyCompletion]()
     var quickOpenViewController: QuickOpenViewController
@@ -174,8 +178,11 @@ class QuickOpenManager {
         self.quickOpenViewController.quickOpenManager = self
     }
 
-    // Parse received completions from core.
+    /// Parse received completions from core.
     func updateCompletions(rawCompletions: [[String: AnyObject]]) {
+        // Wipe current completions.
+        currentCompletions.removeAll()
+
         for rawCompletion in rawCompletions {
             let completionPath = rawCompletion["result_name"] as! String
             let completionScore = rawCompletion["score"] as! Int
@@ -201,24 +208,28 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        let storyboard = NSStoryboard(name: NSStoryboard.Name(rawValue: "Main"), bundle: nil)
-        suggestionTableViewController = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "Quick Open Suggestions Table View Controller")) as? QuickOpenSuggestionsTableViewController
         inputSearchField.delegate = self
+    }
 
+    override func prepare(for segue: NSStoryboardSegue, sender: Any?) {
+        if let identifier = segue.identifier {
+            if identifier.rawValue == "SuggestionTableViewControllerSegue" {
+                let controller = segue.destinationController as! QuickOpenSuggestionsTableViewController
+                suggestionTableViewController = controller
+            }
+        }
     }
 
     // MARK: Suggestion Management
     func showSuggestionsForSearchField() {
         let suggestionSize = NSSize(width: self.view.frame.width, height: suggestionTableViewController.suggestionFrameHeight + inputSearchField.frame.height)
         self.view.window?.setContentSize(suggestionSize)
-        self.view.addSubview(suggestionTableViewController.view)
     }
 
     func clearSuggestionsFromSearchField() {
         inputSearchField.stringValue = ""
         let suggestionSize = NSSize(width: self.view.frame.width, height: suggestionTableViewController.suggestionFrameHeight + inputSearchField.frame.height)
         self.view.window?.setContentSize(suggestionSize)
-        suggestionTableViewController.view.removeFromSuperview()
     }
 
     // Refreshes quick open suggestion on type.
