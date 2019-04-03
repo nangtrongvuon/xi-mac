@@ -24,11 +24,11 @@ class QuickOpenSuggestionRowView: NSTableRowView {
     @IBOutlet weak var fileNameLabel: NSTextField!
     @IBOutlet weak var fullPathLabel: NSTextField!
 
-    // Keeps the focused color on our table view, since we don't actually focus on it.
+    // Keeps the focused color on our table view rows, since we don't actually focus on it.
     override var isEmphasized: Bool {
         get { return true }
         set {
-            // Does nothing
+            // Does nothing, just here so we can override the getter
         }
     }
 }
@@ -62,8 +62,8 @@ class QuickOpenPanel: NSPanel {
         // Avoids double calling the cleanup methods - closing the panel seems to call
         // `resignKey` again.
         if self.isVisible {
-//            quickOpenViewController?.clearSuggestionsFromSearchField()
-//            quickOpenViewController?.quickOpenDelegate.closeQuickOpenSuggestions()
+            quickOpenViewController?.clearSuggestionsFromSearchField()
+            quickOpenViewController?.quickOpenDelegate.closeQuickOpenSuggestions()
         }
     }
 }
@@ -165,6 +165,14 @@ struct FuzzyCompletion {
 // Handles quick open data and states.
 class QuickOpenManager {
     var currentCompletions = [FuzzyCompletion]()
+    var quickOpenViewController: QuickOpenViewController
+
+    init() {
+        let storyboard = NSStoryboard(name: NSStoryboard.Name(rawValue: "Main"), bundle: nil)
+        let controller = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "Quick Open View Controller")) as! QuickOpenViewController
+        self.quickOpenViewController = controller
+        self.quickOpenViewController.quickOpenManager = self
+    }
 
     // Parse received completions from core.
     func updateCompletions(rawCompletions: [[String: AnyObject]]) {
@@ -174,6 +182,9 @@ class QuickOpenManager {
             let newCompletion = FuzzyCompletion(path: completionPath, score: completionScore)
             currentCompletions.append(newCompletion)
         }
+
+        quickOpenViewController.suggestionTableViewController.completions = currentCompletions
+        quickOpenViewController.showSuggestionsForSearchField()
     }
 }
 
@@ -181,8 +192,8 @@ class QuickOpenManager {
 class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
     @IBOutlet weak var inputSearchField: NSSearchField!
 
+    weak var quickOpenManager: QuickOpenManager?
     weak var quickOpenDelegate: QuickOpenDelegate!
-    let quickOpenManager = QuickOpenManager()
     var suggestionTableViewController: QuickOpenSuggestionsTableViewController!
     var suggestionsTableView: QuickOpenTableView {
         return suggestionTableViewController.suggestionsTableView
@@ -190,19 +201,13 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
         let storyboard = NSStoryboard(name: NSStoryboard.Name(rawValue: "Main"), bundle: nil)
         suggestionTableViewController = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "Quick Open Suggestions Table View Controller")) as? QuickOpenSuggestionsTableViewController
         inputSearchField.delegate = self
+
     }
 
     // MARK: Suggestion Management
-    func updateCompletions(newCompletions: [[String: AnyObject]]) {
-        quickOpenManager.updateCompletions(rawCompletions: newCompletions)
-        suggestionTableViewController.completions = quickOpenManager.currentCompletions
-        showSuggestionsForSearchField()
-    }
-
     func showSuggestionsForSearchField() {
         let suggestionSize = NSSize(width: self.view.frame.width, height: suggestionTableViewController.suggestionFrameHeight + inputSearchField.frame.height)
         self.view.window?.setContentSize(suggestionSize)
@@ -211,9 +216,9 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
 
     func clearSuggestionsFromSearchField() {
         inputSearchField.stringValue = ""
-        suggestionTableViewController.view.removeFromSuperview()
-        let suggestionSize = NSSize(width: suggestionsTableView.frame.width, height: inputSearchField.frame.height)
+        let suggestionSize = NSSize(width: self.view.frame.width, height: suggestionTableViewController.suggestionFrameHeight + inputSearchField.frame.height)
         self.view.window?.setContentSize(suggestionSize)
+        suggestionTableViewController.view.removeFromSuperview()
     }
 
     // Refreshes quick open suggestion on type.

@@ -101,13 +101,6 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Qu
         return controller
     }()
 
-    lazy var quickOpenViewController: QuickOpenViewController! = {
-        let storyboard = NSStoryboard(name: NSStoryboard.Name(rawValue: "Main"), bundle: nil)
-        let controller = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "Quick Open View Controller")) as! QuickOpenViewController
-        controller.quickOpenDelegate = self
-        return controller
-    }()
-
     var document: Document!
 
     var xiView: XiViewProxy!
@@ -253,6 +246,7 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Qu
     var hoverRequestID = 0
 
     var quickOpenPanel: QuickOpenPanel!
+    let quickOpenManager = QuickOpenManager()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -270,7 +264,7 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Qu
     override func viewDidAppear() {
         super.viewDidAppear()
         setupStatusBar()
-        setupQuickOpenPanel()
+        setupQuickOpen()
         shadowView.setup()
         NotificationCenter.default.addObserver(self, selector: #selector(frameDidChangeNotification), name: NSView.frameDidChangeNotification, object: scrollView)
         // call to set initial scroll position once we know view size
@@ -286,7 +280,9 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Qu
         statusBar.hasUnifiedTitlebar = unifiedTitlebar
     }
 
-    func setupQuickOpenPanel() {
+    func setupQuickOpen() {
+        let quickOpenViewController = quickOpenManager.quickOpenViewController
+        quickOpenViewController.quickOpenDelegate = self
         quickOpenPanel = QuickOpenPanel(contentViewController: quickOpenViewController)
         quickOpenPanel.worksWhenModal = true
         quickOpenPanel.becomesKeyOnlyIfNeeded = true
