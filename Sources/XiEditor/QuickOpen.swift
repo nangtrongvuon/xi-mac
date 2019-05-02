@@ -151,7 +151,6 @@ extension QuickOpenSuggestionsTableViewController: NSTableViewDelegate, NSTableV
         if let rowView = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: rowIdentifier), owner: nil) as? QuickOpenSuggestionRowView {
             rowView.fileNameLabel.stringValue = fileName
             rowView.fullPathLabel.stringValue = fullPath
-//            rowView.backgroundColor = .clear
             return rowView
         }
         return nil
@@ -172,8 +171,8 @@ class QuickOpenManager {
     var quickOpenViewController: QuickOpenViewController
 
     init() {
-        let storyboard = NSStoryboard(name: NSStoryboard.Name(rawValue: "Main"), bundle: nil)
-        let controller = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "Quick Open View Controller")) as! QuickOpenViewController
+        let storyboard = NSStoryboard(name: NSStoryboard.Name("Main"), bundle: nil)
+        let controller = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier("Quick Open View Controller")) as! QuickOpenViewController
         self.quickOpenViewController = controller
         self.quickOpenViewController.quickOpenManager = self
     }
@@ -213,7 +212,7 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
 
     override func prepare(for segue: NSStoryboardSegue, sender: Any?) {
         if let identifier = segue.identifier {
-            if identifier.rawValue == "SuggestionTableViewControllerSegue" {
+            if identifier == "SuggestionTableViewControllerSegue" {
                 let controller = segue.destinationController as! QuickOpenSuggestionsTableViewController
                 suggestionTableViewController = controller
             }
@@ -233,7 +232,7 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
     }
 
     // Refreshes quick open suggestion on type.
-    override func controlTextDidChange(_ obj: Notification) {
+    func controlTextDidChange(_ obj: Notification) {
         sendCurrentQuery()
     }
 
