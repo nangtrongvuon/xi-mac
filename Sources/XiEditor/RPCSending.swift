@@ -304,6 +304,8 @@ class StdoutRPCSender: RPCSending {
 
         case let .showHover(viewIdentifier, requestIdentifier, result):
             self.client?.showHover(viewIdentifier: viewIdentifier, requestIdentifier: requestIdentifier, result: result)
+        case let .showQuickOpenCompletions(viewIdentifier, completions):
+            self.client?.showQuickOpenCompletions(viewIdentifier: viewIdentifier, completions: completions)
 
         case let .findStatus(viewIdentifier, status):
             self.client?.findStatus(viewIdentifier: viewIdentifier, status: status)

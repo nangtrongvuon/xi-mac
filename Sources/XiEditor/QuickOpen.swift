@@ -158,13 +158,6 @@ extension QuickOpenSuggestionsTableViewController: NSTableViewDelegate, NSTableV
 }
 
 // MARK: - Quick Open Manager
-
-/// A possible quick open completion.
-struct FuzzyCompletion {
-    let path: String
-    let score: Int
-}
-
 /// Handles quick open data and states.
 class QuickOpenManager {
     var currentCompletions = [FuzzyCompletion]()
@@ -178,17 +171,10 @@ class QuickOpenManager {
     }
 
     /// Parse received completions from core.
-    func updateCompletions(rawCompletions: [[String: AnyObject]]) {
+    func updateCompletions(completions: [FuzzyCompletion]) {
         // Wipe current completions.
-        currentCompletions.removeAll()
-
-        for rawCompletion in rawCompletions {
-            let completionPath = rawCompletion["result_name"] as! String
-            let completionScore = rawCompletion["score"] as! Int
-            let newCompletion = FuzzyCompletion(path: completionPath, score: completionScore)
-            currentCompletions.append(newCompletion)
-        }
-
+        currentCompletions = completions
+        
         quickOpenViewController.suggestionTableViewController.completions = currentCompletions
         quickOpenViewController.showSuggestionsForSearchField()
     }

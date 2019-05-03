@@ -68,6 +68,7 @@ enum CoreNotification {
     case languageChanged(viewIdentifier: ViewIdentifier, languageIdentifier: String)
 
     case showHover(viewIdentifier: ViewIdentifier, requestIdentifier: Int, result: String)
+    case showQuickOpenCompletions(viewIdentifier: ViewIdentifier, completions: [FuzzyCompletion])
 
     case findStatus(viewIdentifier: ViewIdentifier, status: [FindStatus])
     case replaceStatus(viewIdentifier: ViewIdentifier, status: ReplaceStatus)
@@ -210,6 +211,17 @@ enum CoreNotification {
                     viewIdentifier: viewIdentifier!,
                     requestIdentifier: requestIdentifier,
                     result: result
+                )
+            }
+            
+        case "show_quick_open_completions":
+            if
+                let completions = jsonParams["completions"] as? [[String: Any]],
+                let completionsStruct = completions.xiCompactMap(FuzzyCompletion.init)
+            {
+                return .showQuickOpenCompletions(
+                    viewIdentifier: viewIdentifier!,
+                    completions: completionsStruct
                 )
             }
 

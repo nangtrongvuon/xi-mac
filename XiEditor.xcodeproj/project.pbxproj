@@ -60,6 +60,7 @@
 		AED22D841FE84B4B0096E7C3 /* text.f.glsl in Resources */ = {isa = PBXBuildFile; fileRef = AED22D801FE84B4B0096E7C3 /* text.f.glsl */; };
 		AED22D861FE877000096E7C3 /* TextLine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AED22D851FE877000096E7C3 /* TextLine.swift */; };
 		AED23F181C83CBED002246CE /* EditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AED23F171C83CBEC002246CE /* EditView.swift */; };
+		C2D2433A227C263F0046F997 /* FuzzyCompletion.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D24339227C263F0046F997 /* FuzzyCompletion.swift */; };
 		D803A9A421C7C4630042DE8F /* FindStatusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D803A9A321C7C4630042DE8F /* FindStatusTests.swift */; };
 		D803A9A621C7CCB90042DE8F /* FindStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = D803A9A521C7CCB90042DE8F /* FindStatus.swift */; };
 		D80F2D8421CEB4F90090BDA0 /* XiViewProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = D80F2D8321CEB4F90090BDA0 /* XiViewProxy.swift */; };
@@ -199,6 +200,7 @@
 		AED22D801FE84B4B0096E7C3 /* text.f.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = text.f.glsl; sourceTree = "<group>"; };
 		AED22D851FE877000096E7C3 /* TextLine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextLine.swift; sourceTree = "<group>"; };
 		AED23F171C83CBEC002246CE /* EditView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EditView.swift; sourceTree = "<group>"; };
+		C2D24339227C263F0046F997 /* FuzzyCompletion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FuzzyCompletion.swift; sourceTree = "<group>"; };
 		D803A9A321C7C4630042DE8F /* FindStatusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindStatusTests.swift; sourceTree = "<group>"; };
 		D803A9A521C7CCB90042DE8F /* FindStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindStatus.swift; sourceTree = "<group>"; };
 		D80F2D8321CEB4F90090BDA0 /* XiViewProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XiViewProxy.swift; sourceTree = "<group>"; };
@@ -333,6 +335,7 @@
 				D803A9A521C7CCB90042DE8F /* FindStatus.swift */,
 				3FC496EE22448332003D1533 /* MeasureWidth.swift */,
 				3FC496EC22447E37003D1533 /* ReplaceStatus.swift */,
+				C2D24339227C263F0046F997 /* FuzzyCompletion.swift */,
 				3F9C4E7C223D7E3200669C75 /* Types.swift */,
 			);
 			path = Core;
@@ -769,6 +772,7 @@
 				6B90DD221F14110B00DF3CE2 /* UserInputPromptController.swift in Sources */,
 				D80F2D8421CEB4F90090BDA0 /* XiViewProxy.swift in Sources */,
 				6057C52521A07F1900F6BD47 /* LoggingUtilities.swift in Sources */,
+				C2D2433A227C263F0046F997 /* FuzzyCompletion.swift in Sources */,
 				832910D920229C2D0042C32B /* Fps.swift in Sources */,
 				AED22D781FE8404D0096E7C3 /* Renderer.swift in Sources */,
 				D810EA5221BB291D00EABB21 /* ClientImplementation.swift in Sources */,

@@ -213,10 +213,10 @@ class ClientImplementation: XiClient, DocumentsProviding, ConfigCacheProviding, 
         }
     }
 
-    func showQuickOpenCompletions(viewIdentifier: String, completions: [[String : AnyObject]]) {
+    func showQuickOpenCompletions(viewIdentifier: String, completions: [FuzzyCompletion]) {
         let document = documentForViewIdentifier(viewIdentifier: viewIdentifier)
         DispatchQueue.main.async {
-            document?.editViewController?.quickOpenManager.updateCompletions(rawCompletions: completions)
+            document?.editViewController?.quickOpenManager.updateCompletions(completions: completions)
         }
     }
 
