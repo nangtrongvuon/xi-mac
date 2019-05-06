@@ -246,7 +246,7 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Qu
     var hoverRequestID = 0
 
     var quickOpenPanel: QuickOpenPanel!
-    let quickOpenManager = QuickOpenManager()
+    let quickOpenSuggestionController = QuickOpenSuggestionController()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -281,7 +281,7 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Qu
     }
 
     func setupQuickOpen() {
-        let quickOpenViewController = quickOpenManager.quickOpenViewController
+        let quickOpenViewController = quickOpenSuggestionController.quickOpenViewController
         quickOpenViewController.quickOpenDelegate = self
         quickOpenPanel = QuickOpenPanel(contentViewController: quickOpenViewController)
         quickOpenPanel.worksWhenModal = true
