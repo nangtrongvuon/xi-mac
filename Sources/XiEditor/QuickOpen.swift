@@ -48,17 +48,16 @@ class QuickOpenSuggestionRowView: NSTableRowView {
         let fullPath = fileURL.relativeString
         let fileName = fileURL.lastPathComponent
         
-        self.fileNameLabel.stringValue = fullPath
-        self.fullPathLabel.stringValue = fileName
+        self.fileNameLabel.stringValue = fileName
+        self.fullPathLabel.stringValue = fullPath
     }
 }
 
 // MARK: Protocols
 protocol QuickOpenDelegate: class {
-    func activateQuickOpenPanel()
-    func sendQuickOpenRequest(query: String)
     func showQuickOpenSuggestions()
-    func selectedQuickOpenSuggestion(atIndex index: Int)
+    func sendQuickOpenRequest(query: String)
+    func didSelectQuickOpenCompletion(with completion: FuzzyCompletion)
     func closeQuickOpenSuggestions()
 }
 
@@ -99,7 +98,7 @@ class QuickOpenSuggestionsTableViewController: NSViewController {
     /// This can go up to the `maximumSuggestionHeight` defined below.
     var suggestionFrameHeight: CGFloat {
         if let suggestionController = quickOpenSuggestionController {
-            var calculatedHeight = CGFloat(suggestionController.currentCompletions.count) * suggestionRowHeight
+            var calculatedHeight = CGFloat(suggestionsTableView.numberOfRows) * suggestionRowHeight
             if calculatedHeight >= maximumSuggestionHeight {
                 calculatedHeight = maximumSuggestionHeight
             }
@@ -149,7 +148,7 @@ extension QuickOpenSuggestionsTableViewController: NSTableViewDelegate {
         let rowIdentifier = CellIdentifiers.FilenameCell
         
         if let rowView = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: rowIdentifier), owner: nil) as? QuickOpenSuggestionRowView {
-            if let completion = quickOpenSuggestionController?.currentCompletions[row] {
+            if let completion = quickOpenSuggestionController?.getSuggestion(at: row) {
                 rowView.configure(withCompletion: completion)
                 return rowView    
             }
@@ -161,16 +160,20 @@ extension QuickOpenSuggestionsTableViewController: NSTableViewDelegate {
 // MARK: - Quick Open Suggestion Manager
 /// Handles quick open suggestions' data and states.
 class QuickOpenSuggestionController: NSObject, NSTableViewDataSource {
-    var currentCompletions = [FuzzyCompletion]()
+    private var currentCompletions = [FuzzyCompletion]()
     var quickOpenViewController: QuickOpenViewController
 
     override init() {
         let storyboard = NSStoryboard(name: NSStoryboard.Name("Main"), bundle: nil)
         let controller = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier("Quick Open View Controller")) as! QuickOpenViewController
         self.quickOpenViewController = controller
-        
         super.init()
         controller.quickOpenSuggestionController = self
+    }
+    
+    /// Clear all completions.
+    func clearCompletions() {
+        currentCompletions.removeAll()
     }
 
     /// Parse received completions from core.
@@ -178,6 +181,10 @@ class QuickOpenSuggestionController: NSObject, NSTableViewDataSource {
         // Override all current completions.
         currentCompletions = completions
         quickOpenViewController.showSuggestionsForSearchField()
+    }
+    
+    func getSuggestion(at index: Int) -> FuzzyCompletion {
+        return currentCompletions[index]
     }
     
     // MARK: NSTableViewDataSource
@@ -195,6 +202,11 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
     var suggestionTableViewController: QuickOpenSuggestionsTableViewController!
     var suggestionsTableView: QuickOpenTableView {
         return suggestionTableViewController.suggestionsTableView
+    }
+    
+    var suggestionSize: NSSize {
+        return NSSize(width: self.view.frame.width, 
+                      height: suggestionTableViewController.suggestionFrameHeight + inputSearchField.frame.height)
     }
 
     override func viewDidLoad() {
@@ -215,14 +227,19 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
     // MARK: Suggestion Management
     func showSuggestionsForSearchField() {
         self.suggestionsTableView.reloadData()
-        let suggestionSize = NSSize(width: self.view.frame.width, height: suggestionTableViewController.suggestionFrameHeight + inputSearchField.frame.height)
         self.view.window?.setContentSize(suggestionSize)
     }
 
     func clearSuggestionsFromSearchField() {
         inputSearchField.stringValue = ""
-        let suggestionSize = NSSize(width: self.view.frame.width, height: suggestionTableViewController.suggestionFrameHeight + inputSearchField.frame.height)
         self.view.window?.setContentSize(suggestionSize)
+    }
+    
+    func selectSuggestion(atIndex index: Int) {
+        if let suggestionController = self.quickOpenSuggestionController {
+            let selectedCompletion = suggestionController.getSuggestion(at: index)
+            self.quickOpenDelegate?.didSelectQuickOpenCompletion(with: selectedCompletion)
+        }
     }
 
     // Refreshes quick open suggestion on type.
@@ -253,8 +270,10 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
             
         // Return/Enter
         case #selector(insertNewline(_:)):
-            quickOpenDelegate?.selectedQuickOpenSuggestion(atIndex: self.suggestionsTableView.selectedRow)
+            let selectedCompletionIndex = self.suggestionsTableView.selectedRow
+            self.selectSuggestion(atIndex: selectedCompletionIndex)
             return true
+            
         default:
             return false
         }
@@ -263,34 +282,29 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
 
 // MARK: QuickOpenDelegate
 extension EditViewController {
-    func activateQuickOpenPanel() {
+    func showQuickOpenSuggestions() {
         editView.window?.beginSheet(quickOpenPanel, completionHandler: nil)
+    }
+    
+    func closeQuickOpenSuggestions() {
+        // Cleanup on close or something
+        editView.window?.endSheet(quickOpenPanel)
+        print("quick open closed")
     }
 
     func sendQuickOpenRequest(query: String) {
         xiView.sendQuickOpenRequest(query: query)
     }
 
-    func showQuickOpenSuggestions() {
-        print("do stuff once core sends back stuff")
-    }
-
-    func selectedQuickOpenSuggestion(atIndex index: Int) {
-        let preferencesPath = URL(fileURLWithPath: "")
-        
+    func didSelectQuickOpenCompletion(with completion: FuzzyCompletion) {
+        let completionPath = URL(fileURLWithPath: completion.path)
         NSDocumentController.shared.openDocument(
-            withContentsOf: preferencesPath,
+            withContentsOf: completionPath,
             display: true,
             completionHandler: { (document, alreadyOpen, error) in
                 if let error = error {
                     print("error quick opening file \(error)")
                 }
         })
-    }
-
-    func closeQuickOpenSuggestions() {
-        // Cleanup on close or something
-        editView.window?.endSheet(quickOpenPanel)
-        print("quick open closed")
     }
 }

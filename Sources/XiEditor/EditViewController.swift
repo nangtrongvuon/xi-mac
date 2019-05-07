@@ -568,7 +568,7 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Qu
 
     @objc func initiateQuickOpenSession(_ sender: Any?) {
         xiView.initiateQuickOpenSession()
-        activateQuickOpenPanel()
+        showQuickOpenSuggestions()
     }
 
     @objc func paste(_ sender: AnyObject?) {
