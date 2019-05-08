@@ -246,7 +246,7 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Qu
     var hoverRequestID = 0
 
     var quickOpenPanel: QuickOpenPanel!
-    let quickOpenSuggestionController = QuickOpenSuggestionController()
+    let quickOpenCompletionController = QuickOpenCompletionController()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -281,7 +281,7 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Qu
     }
 
     func setupQuickOpen() {
-        let quickOpenViewController = quickOpenSuggestionController.quickOpenViewController
+        let quickOpenViewController = quickOpenCompletionController.quickOpenViewController
         quickOpenViewController.quickOpenDelegate = self
         quickOpenPanel = QuickOpenPanel(contentViewController: quickOpenViewController)
         quickOpenPanel.worksWhenModal = true
@@ -568,7 +568,7 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Qu
 
     @objc func initiateQuickOpenSession(_ sender: Any?) {
         xiView.initiateQuickOpenSession()
-        showQuickOpenSuggestions()
+        showQuickOpenCompletionPanel()
     }
 
     @objc func paste(_ sender: AnyObject?) {
