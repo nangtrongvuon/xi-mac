@@ -45,11 +45,18 @@ class QuickOpenCompletionRowView: NSTableRowView {
     /// Configures this view with data from a completion.
     func configure(withCompletion completion: FuzzyCompletion) {
         let fileURL = URL(fileURLWithPath: completion.path)
-        let fullPath = fileURL.relativeString
         let fileName = fileURL.lastPathComponent
+        let fullPath = completion.path
         
-        self.fileNameLabel.stringValue = fileName
+        let filePathAttributedString = NSMutableAttributedString(string: fileName)
+        self.fileNameLabel.attributedStringValue = filePathAttributedString
         self.fullPathLabel.stringValue = fullPath
+    }
+    
+    /// Highlight matching quick open characters as they are typed.
+    func highlightMatchingCharacters(withQuery query: String) {
+        // Find where this cell's character appears in the query
+        
     }
 }
 
