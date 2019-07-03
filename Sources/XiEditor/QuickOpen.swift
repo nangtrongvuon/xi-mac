@@ -36,6 +36,7 @@ class QuickOpenCompletionRowView: NSTableRowView {
     override func drawSelection(in dirtyRect: NSRect) {
         super.drawSelection(in: dirtyRect)
 
+        // Allows us to use the selection color without actually selecting anything yet.
         NSColor.alternateSelectedControlColor.set()
         let rect = NSRect(x: 0, y: bounds.height - 2, width: bounds.width, height: bounds.height)
         let path = NSBezierPath(rect: rect)
@@ -97,14 +98,14 @@ class QuickOpenCompletionTableViewController: NSViewController {
     @IBOutlet var completionScrollView: NSScrollView!
     
     weak var quickOpenViewController: QuickOpenViewController?
-    weak var quickOpenCompletionController: QuickOpenCompletionController? {
-        return self.completionTableView.dataSource as? QuickOpenCompletionController
+    var quickOpenCompletionController: QuickOpenCompletionController {
+        return self.completionTableView.dataSource as! QuickOpenCompletionController
     }
 
     /// The current height of the completion table view.
     /// This can go up to the `maximumCompletionTableViewHeight` defined below.
     var calculatedTableViewHeight: CGFloat {
-        var calculatedHeight = CGFloat(completionTableView.numberOfRows) * completionRowHeight
+        var calculatedHeight = CGFloat(quickOpenCompletionController.completionsCount) * completionRowHeight
         if calculatedHeight >= maximumCompletionTableViewHeight {
             calculatedHeight = maximumCompletionTableViewHeight
         }
@@ -117,11 +118,11 @@ class QuickOpenCompletionTableViewController: NSViewController {
     let maximumCompletions = 6
 
     /// The tallest height that the completion can be.
-    /// Currently capped to 6, which is similar to other editors.
+    /// Currently capped at 6, which is similar to other editors.
     var maximumCompletionTableViewHeight: CGFloat {
         return CGFloat(maximumCompletions) * completionRowHeight
     }
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -151,12 +152,12 @@ extension QuickOpenCompletionTableViewController: NSTableViewDelegate {
         let rowIdentifier = CellIdentifiers.FilenameCell
         
         if let rowView = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: rowIdentifier), owner: nil) as? QuickOpenCompletionRowView {
-            if let completion = quickOpenCompletionController?.getCompletion(at: row) {
-                rowView.configure(withCompletion: completion)
-                return rowView    
-            }
+            let completion = quickOpenCompletionController.getCompletion(at: row) 
+            rowView.configure(withCompletion: completion)
+            return rowView    
+        } else {
+            return nil    
         }
-        return nil
     }
 }
 
@@ -165,6 +166,9 @@ extension QuickOpenCompletionTableViewController: NSTableViewDelegate {
 class QuickOpenCompletionController: NSObject, NSTableViewDataSource {
     private var currentCompletions = [FuzzyCompletion]()
     var quickOpenViewController: QuickOpenViewController
+    var completionsCount: Int {
+        return currentCompletions.count
+    }
 
     override init() {
         let storyboard = NSStoryboard(name: NSStoryboard.Name("Main"), bundle: nil)
@@ -192,7 +196,7 @@ class QuickOpenCompletionController: NSObject, NSTableViewDataSource {
     
     // MARK: NSTableViewDataSource
     func numberOfRows(in tableView: NSTableView) -> Int {
-        return currentCompletions.count
+        return completionsCount
     }
 }
 
@@ -207,9 +211,10 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
         return completionTableViewController.completionTableView
     }
     
-    var completionSize: NSSize {
+    var completionWindowSize: NSSize {
+        let fittingHeight = completionTableViewController.calculatedTableViewHeight + inputSearchField.frame.height
         return NSSize(width: self.view.frame.width, 
-                      height: completionTableViewController.calculatedTableViewHeight + inputSearchField.frame.height)
+                      height: fittingHeight)
     }
 
     override func viewDidLoad() {
@@ -230,13 +235,13 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
     // MARK: Completion Management
     func displayCompletions() {
         self.completionTableView.reloadData()
-        self.view.window?.setContentSize(completionSize)
+        self.view.window?.setContentSize(completionWindowSize)
     }
 
     func clearCompletions() {
         inputSearchField.stringValue = ""
         quickOpenCompletionController?.clearCompletions()
-        self.view.window?.setContentSize(completionSize)
+        self.view.window?.setContentSize(completionWindowSize)
     }
     
     func selectCompletion(atIndex index: Int) {
