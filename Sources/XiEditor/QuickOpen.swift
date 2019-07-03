@@ -279,9 +279,14 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
             
         // Return/Enter
         case #selector(insertNewline(_:)):
-            let selectedCompletionIndex = self.completionTableView.selectedRow
-            self.selectCompletion(atIndex: selectedCompletionIndex)
-            return true
+            let selectedRow = self.completionTableView.selectedRow
+            // Don't allow choosing a completion if no row is selected.
+            if selectedRow > 0 {
+                self.selectCompletion(atIndex: selectedRow)
+                return true    
+            } else {
+                return false
+            }
             
         default:
             return false
