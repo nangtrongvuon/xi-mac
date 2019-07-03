@@ -291,6 +291,7 @@ class EditViewController: NSViewController, EditViewDataSource, FindDelegate, Qu
         quickOpenPanel.contentView!.layer!.cornerRadius = 6
         quickOpenPanel.isOpaque = true
         quickOpenPanel.backgroundColor = .clear
+        quickOpenPanel.setContentSize(quickOpenViewController.completionWindowSize)
     }
 
     func updateGutterWidth() {
