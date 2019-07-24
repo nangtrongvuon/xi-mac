@@ -68,6 +68,7 @@ enum CoreNotification {
     case languageChanged(viewIdentifier: ViewIdentifier, languageIdentifier: String)
 
     case showHover(viewIdentifier: ViewIdentifier, requestIdentifier: Int, result: String)
+    case setQuickOpenRoot(viewIdentifier: ViewIdentifier, root: String)
     case showQuickOpenCompletions(viewIdentifier: ViewIdentifier, completions: [FuzzyCompletion])
 
     case findStatus(viewIdentifier: ViewIdentifier, status: [FindStatus])
@@ -211,6 +212,14 @@ enum CoreNotification {
                     viewIdentifier: viewIdentifier!,
                     requestIdentifier: requestIdentifier,
                     result: result
+                )
+            }
+
+        case "set_quick_open_root":
+            if let root = jsonParams["root"] as? String {
+                return .setQuickOpenRoot(
+                    viewIdentifier: viewIdentifier!,
+                    root: root
                 )
             }
             

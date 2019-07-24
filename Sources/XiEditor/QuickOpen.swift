@@ -164,18 +164,15 @@ extension QuickOpenCompletionTableViewController: NSTableViewDelegate {
 // MARK: - Quick Open Completion Manager
 /// Handles quick open completions data and states.
 class QuickOpenCompletionController: NSObject, NSTableViewDataSource {
+    weak var delegate: QuickOpenCompletionDelegate?
+    // The root path where quick open query matches originate from.
+    private var root: String = ""
     private var currentCompletions = [FuzzyCompletion]()
-    var quickOpenViewController: QuickOpenViewController
-    var completionsCount: Int {
-        return currentCompletions.count
-    }
+    // This count is exposed for layout purposes.
+    var completionsCount: Int { return currentCompletions.count }
 
-    override init() {
-        let storyboard = NSStoryboard(name: NSStoryboard.Name("Main"), bundle: nil)
-        let controller = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier("Quick Open View Controller")) as! QuickOpenViewController
-        self.quickOpenViewController = controller
-        super.init()
-        controller.quickOpenCompletionController = self
+    func setQuickOpenRoot(to root: String) {
+        self.root = root
     }
     
     /// Clear all completions.
@@ -187,11 +184,18 @@ class QuickOpenCompletionController: NSObject, NSTableViewDataSource {
     func updateCompletions(completions: [FuzzyCompletion]) {
         // Override all current completions.
         currentCompletions = completions
-        quickOpenViewController.displayCompletions()
+        // Tells our view controller the list of completions has changed.
+        delegate?.completionsChanged()
     }
     
     func getCompletion(at index: Int) -> FuzzyCompletion {
         return currentCompletions[index]
+    }
+
+    // Returns a full URL for a given completion.
+    func getCompletionURL(at index: Int) -> URL {
+        let rootPath = URL(fileURLWithPath: root)
+        return rootPath.appendingPathComponent(currentCompletions[index].path)
     }
     
     // MARK: NSTableViewDataSource
@@ -204,22 +208,18 @@ class QuickOpenCompletionController: NSObject, NSTableViewDataSource {
 class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
     @IBOutlet weak var inputSearchField: NSSearchField!
 
-    weak var quickOpenCompletionController: QuickOpenCompletionController?
-    weak var quickOpenDelegate: QuickOpenDelegate!
+    weak var delegate: QuickOpenViewDelegate!
+    var completionController: QuickOpenCompletionController!
     var completionTableViewController: QuickOpenCompletionTableViewController!
     var completionTableView: QuickOpenTableView {
         return completionTableViewController.completionTableView
     }
     
-    var completionWindowSize: NSSize {
-        let fittingHeight = completionTableViewController.calculatedTableViewHeight + inputSearchField.frame.height
-        return NSSize(width: self.view.frame.width, 
-                      height: fittingHeight)
-    }
-
     override func viewDidLoad() {
         super.viewDidLoad()
         inputSearchField.delegate = self
+        self.completionController = QuickOpenCompletionController()
+        self.completionController.delegate = self
     }
 
     override func prepare(for segue: NSStoryboardSegue, sender: Any?) {

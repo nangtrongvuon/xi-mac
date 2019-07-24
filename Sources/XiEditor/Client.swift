@@ -69,7 +69,10 @@ protocol XiClient: AnyObject {
 
     /// A result, formatted in Markdown, that is returned from a hover request.
     func showHover(viewIdentifier: String, requestIdentifier: Int, result: String)
-    
+
+    /// Sets the quick open root, which can also be considered the current workspace.
+    func setQuickOpenRoot(viewIdentifier: String, root: String)
+
     /// A list of completions for a quick open request.
     func showQuickOpenCompletions(viewIdentifier: String, completions: [FuzzyCompletion])
 
