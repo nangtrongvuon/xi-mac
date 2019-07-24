@@ -14,61 +14,6 @@
 
 import Cocoa
 
-// MARK: Utility Classes
-class QuickOpenTableView: NSTableView {
-    override var needsPanelToBecomeKey: Bool { return true }
-    override var acceptsFirstResponder: Bool { return false }
-    override var isFlipped: Bool { return true }
-}
-
-class QuickOpenCompletionRowView: NSTableRowView {
-    @IBOutlet weak var fileNameLabel: NSTextField!
-    @IBOutlet weak var fullPathLabel: NSTextField!
-
-    // Keeps the focused color on our table view rows, since we don't actually focus on it.
-    override var isEmphasized: Bool {
-        get { return true }
-        // Does nothing, just here so we can override the getter
-        set { }
-    }
-
-    // Allows us to get some custom highlighting in.
-    override func drawSelection(in dirtyRect: NSRect) {
-        super.drawSelection(in: dirtyRect)
-
-        // Allows us to use the selection color without actually selecting anything yet.
-        NSColor.alternateSelectedControlColor.set()
-        let rect = NSRect(x: 0, y: bounds.height - 2, width: bounds.width, height: bounds.height)
-        let path = NSBezierPath(rect: rect)
-        path.fill()
-    }
-    
-    /// Configures this view with data from a completion.
-    func configure(withCompletion completion: FuzzyCompletion) {
-        let fileURL = URL(fileURLWithPath: completion.path)
-        let fileName = fileURL.lastPathComponent
-        let fullPath = completion.path
-        
-        let filePathAttributedString = NSMutableAttributedString(string: fileName)
-        self.fileNameLabel.attributedStringValue = filePathAttributedString
-        self.fullPathLabel.stringValue = fullPath
-    }
-    
-    /// Highlight matching quick open characters as they are typed.
-    func highlightMatchingCharacters(withQuery query: String) {
-        // Find where this cell's character appears in the query
-        
-    }
-}
-
-// MARK: Protocols
-protocol QuickOpenDelegate: class {
-    func showQuickOpenCompletionPanel()
-    func sendQuickOpenRequest(query: String)
-    func didSelectQuickOpenCompletion(with completion: FuzzyCompletion)
-    func closeQuickOpenCompletionPanel()
-}
-
 // MARK: - Quick Open Window Handling
 class QuickOpenPanel: NSPanel {
     var quickOpenViewController: QuickOpenViewController? {
@@ -80,13 +25,13 @@ class QuickOpenPanel: NSPanel {
         return true
     }
 
-    // Closes quick open panel immediately when losing focus.
+    // Closes quick open panel immediately when focus is lost.
     override func resignKey() {
-        // Avoids double calling the cleanup methods - closing the panel seems to call
-        // `resignKey` again.
+        // Checking for panel visibility avoids double calling the cleanup methods,
+        // since closing the panel seems to call `resignKey` again.
         if self.isVisible {
             quickOpenViewController?.clearCompletions()
-            quickOpenViewController?.quickOpenDelegate.closeQuickOpenCompletionPanel()
+            quickOpenViewController?.delegate.closeQuickOpenCompletionPanel()
         }
     }
 }
@@ -115,10 +60,10 @@ class QuickOpenCompletionTableViewController: NSViewController {
     /// Height for each row in the completion table view.
     let completionRowHeight: CGFloat = 60
     /// The maximum number of completions shown without scrolling.
+    /// Currently capped at 6, which is similar to other editors.
     let maximumCompletions = 6
 
     /// The tallest height that the completion can be.
-    /// Currently capped at 6, which is similar to other editors.
     var maximumCompletionTableViewHeight: CGFloat {
         return CGFloat(maximumCompletions) * completionRowHeight
     }
@@ -132,7 +77,7 @@ class QuickOpenCompletionTableViewController: NSViewController {
         self.view.layer?.cornerRadius = 6 // 6 is considered to be the native corner radius.
     }
 
-    // Force table view to load all of its views on awake from nib.
+    // Doing this forces `viewDidLoad` to call, which initializes all necessary views. 
     override func awakeFromNib() {
         super.awakeFromNib()
         _ = self.view
@@ -227,49 +172,53 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
             if identifier == "QuickOpenCompletionTableViewControllerSegue" {
                 let controller = segue.destinationController as! QuickOpenCompletionTableViewController
                 completionTableViewController = controller
-                completionTableViewController.completionTableView.dataSource = self.quickOpenCompletionController
+                completionTableViewController.completionTableView.dataSource = self.completionController
             }
         }
     }
 
+    // Sizes the window appropriately to the number of completions received.
+    func resizeCompletionWindowToFit() {
+        let fittingHeight = completionTableViewController.calculatedTableViewHeight + inputSearchField.frame.height
+        let newCompletionWindowSize = NSSize(width: self.view.frame.width,
+                          height: fittingHeight)
+        self.view.window?.setContentSize(newCompletionWindowSize)
+    }
+
     // MARK: Completion Management
-    func displayCompletions() {
+    func displayNewCompletions() {
         self.completionTableView.reloadData()
-        self.view.window?.setContentSize(completionWindowSize)
+        resizeCompletionWindowToFit()
     }
 
     func clearCompletions() {
         inputSearchField.stringValue = ""
-        quickOpenCompletionController?.clearCompletions()
-        self.view.window?.setContentSize(completionWindowSize)
+        completionController.clearCompletions()
+        resizeCompletionWindowToFit()
     }
     
     func selectCompletion(atIndex index: Int) {
-        if let completionController = self.quickOpenCompletionController {
-            let selectedCompletion = completionController.getCompletion(at: index)
-            self.quickOpenDelegate?.didSelectQuickOpenCompletion(with: selectedCompletion)
+        if let completionController = self.completionController {
+            let completionPath = completionController.getCompletionURL(at: index)
+            self.delegate?.didSelectQuickOpenCompletion(with: completionPath)
         }
     }
 
     // Refreshes quick open completion on type.
     func controlTextDidChange(_ obj: Notification) {
-        sendCurrentQuery()
-    }
-
-    @objc func sendCurrentQuery() {
         let query = self.inputSearchField.stringValue
-        quickOpenDelegate.sendQuickOpenRequest(query: query)
+        delegate.sendQuickOpenRequest(query: query)
     }
 
     // Overrides keyboard commands when the quick open panel is currently showing.
-    // Not very elegant, but it does the job for now.
+    // Not very elegant, but it does the job.
     func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
         switch commandSelector {
             
         // ESC
         case #selector(cancelOperation(_:)):
             clearCompletions()
-            quickOpenDelegate.closeQuickOpenCompletionPanel()
+            delegate.closeQuickOpenCompletionPanel()
             return true
             
         // Up/Down
@@ -281,7 +230,7 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
         case #selector(insertNewline(_:)):
             let selectedRow = self.completionTableView.selectedRow
             // Don't allow choosing a completion if no row is selected.
-            if selectedRow > 0 {
+            if selectedRow >= 0 {
                 self.selectCompletion(atIndex: selectedRow)
                 return true    
             } else {
@@ -294,7 +243,24 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
     }
 }
 
-// MARK: QuickOpenDelegate
+extension QuickOpenViewController: QuickOpenCompletionDelegate {
+    func completionsChanged() {
+        self.displayNewCompletions()
+    }
+}
+
+// MARK: - Protocols and delegate handling
+protocol QuickOpenCompletionDelegate: class {
+    func completionsChanged()
+}
+
+protocol QuickOpenViewDelegate: class {
+    func showQuickOpenCompletionPanel()
+    func sendQuickOpenRequest(query: String)
+    func didSelectQuickOpenCompletion(with completionPath: URL)
+    func closeQuickOpenCompletionPanel()
+}
+
 extension EditViewController {
     func showQuickOpenCompletionPanel() {
         editView.window?.beginSheet(quickOpenPanel, completionHandler: nil)
@@ -304,8 +270,7 @@ extension EditViewController {
         xiView.sendQuickOpenRequest(query: query)
     }
 
-    func didSelectQuickOpenCompletion(with completion: FuzzyCompletion) {
-        let completionPath = URL(fileURLWithPath: completion.path)
+    func didSelectQuickOpenCompletion(with completionPath: URL) {
         NSDocumentController.shared.openDocument(
             withContentsOf: completionPath,
             display: true,
@@ -320,5 +285,58 @@ extension EditViewController {
         // Cleanup on close or something
         editView.window?.endSheet(quickOpenPanel)
         print("quick open closed")
+    }
+}
+
+// MARK: - Utility Classes
+class QuickOpenTableView: NSTableView {
+    override var needsPanelToBecomeKey: Bool { return true }
+    override var acceptsFirstResponder: Bool { return false }
+    override var isFlipped: Bool { return true }
+}
+
+// We subclass this just to disable smooth scroll in the table view.
+class QuickOpenClipView: NSClipView {
+    override func scroll(_ point: NSPoint) {
+        super.setBoundsOrigin(point)
+    }
+}
+
+class QuickOpenCompletionRowView: NSTableRowView {
+    @IBOutlet weak var fileNameLabel: NSTextField!
+    @IBOutlet weak var fullPathLabel: NSTextField!
+
+    /// Keeps the focused color on our table view rows, since we don't actually focus on it.
+    override var isEmphasized: Bool {
+        get { return true }
+        // Does nothing, just here so we can override the getter
+        set { }
+    }
+
+    /// Allows us to get some custom highlighting in.
+    override func drawSelection(in dirtyRect: NSRect) {
+        super.drawSelection(in: dirtyRect)
+
+        NSColor.alternateSelectedControlColor.set()
+        let rect = NSRect(x: 0, y: bounds.height - 2, width: bounds.width, height: bounds.height)
+        let path = NSBezierPath(rect: rect)
+        path.fill()
+    }
+
+    /// Configures this view with data from a completion.
+    func configure(withCompletion completion: FuzzyCompletion) {
+        let fileURL = URL(fileURLWithPath: completion.path)
+        let fileName = fileURL.lastPathComponent
+        let fullPath = completion.path
+
+        let filePathAttributedString = NSMutableAttributedString(string: fileName)
+        self.fileNameLabel.attributedStringValue = filePathAttributedString
+        self.fullPathLabel.stringValue = fullPath
+    }
+
+    /// Highlight matching quick open characters as they are typed.
+    func highlightMatchingCharacters(withQuery query: String) {
+        // Find where this cell's character appears in the query
+
     }
 }
