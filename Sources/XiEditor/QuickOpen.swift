@@ -70,11 +70,14 @@ class QuickOpenCompletionTableViewController: NSViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        self.completionTableView.delegate = self
-        self.completionTableView.target = self
+        setupTableView()
         self.view.wantsLayer = true
         self.view.layer?.cornerRadius = 6 // 6 is considered to be the native corner radius.
+    }
+
+    func setupTableView() {
+        self.completionTableView.delegate = self
+        self.completionTableView.target = self
     }
 
     // Doing this forces `viewDidLoad` to call, which initializes all necessary views. 
@@ -97,8 +100,9 @@ extension QuickOpenCompletionTableViewController: NSTableViewDelegate {
         let rowIdentifier = CellIdentifiers.FilenameCell
         
         if let rowView = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: rowIdentifier), owner: nil) as? QuickOpenCompletionRowView {
-            let completion = quickOpenCompletionController.getCompletion(at: row) 
-            rowView.configure(withCompletion: completion)
+            let query = quickOpenCompletionController.currentQuery
+            let completion = quickOpenCompletionController.getCompletion(at: row)
+            rowView.configure(query: query, completion: completion)
             return rowView    
         } else {
             return nil    
@@ -115,6 +119,7 @@ class QuickOpenCompletionController: NSObject, NSTableViewDataSource {
     private var currentCompletions = [FuzzyCompletion]()
     // This count is exposed for layout purposes.
     var completionsCount: Int { return currentCompletions.count }
+    var currentQuery: String = ""
 
     func setQuickOpenRoot(to root: String) {
         self.root = root
@@ -207,6 +212,7 @@ class QuickOpenViewController: NSViewController, NSSearchFieldDelegate {
     // Refreshes quick open completion on type.
     func controlTextDidChange(_ obj: Notification) {
         let query = self.inputSearchField.stringValue
+        completionController.currentQuery = query
         delegate.sendQuickOpenRequest(query: query)
     }
 
@@ -297,8 +303,8 @@ class QuickOpenTableView: NSTableView {
 
 // We subclass this just to disable smooth scroll in the table view.
 class QuickOpenClipView: NSClipView {
-    override func scroll(_ point: NSPoint) {
-        super.setBoundsOrigin(point)
+    override func scroll(to newOrigin: NSPoint) {
+        super.setBoundsOrigin(newOrigin)
     }
 }
 
@@ -324,19 +330,47 @@ class QuickOpenCompletionRowView: NSTableRowView {
     }
 
     /// Configures this view with data from a completion.
-    func configure(withCompletion completion: FuzzyCompletion) {
-        let fileURL = URL(fileURLWithPath: completion.path)
-        let fileName = fileURL.lastPathComponent
+    func configure(query: String, completion: FuzzyCompletion) {
         let fullPath = completion.path
-
-        let filePathAttributedString = NSMutableAttributedString(string: fileName)
-        self.fileNameLabel.attributedStringValue = filePathAttributedString
+        let processedCompletionName = highlightMatchingCharacters(with: query, in: completion)
+        self.fileNameLabel.attributedStringValue = processedCompletionName
         self.fullPathLabel.stringValue = fullPath
     }
 
     /// Highlight matching quick open characters as they are typed.
-    func highlightMatchingCharacters(withQuery query: String) {
-        // Find where this cell's character appears in the query
-
+    /// Tries to be UTF-8 safe.
+    func highlightMatchingCharacters(with query: String, in completion: FuzzyCompletion) -> NSAttributedString {
+        let fileURL = URL(fileURLWithPath: completion.path)
+        let fileName = fileURL.lastPathComponent
+        let resultAttributedString = NSMutableAttributedString(string: fileName)
+        let highlightAttributes = [NSAttributedString.Key.font: NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .bold)]
+        let matchStartIndex = fileName.index(fileName.startIndex, offsetBy: completion.matchStart)
+        let matchEndIndex = fileName.index(fileName.startIndex, offsetBy: completion.matchEnd)
+        var matchCount = 0
+        
+        if query.isEmpty {
+            return resultAttributedString
+        }
+        // move two things at once
+        // query index and completion index
+        print("query: \(query)")
+        print("completion: \(completion)")
+        for charIndex in fileName[matchStartIndex ..< matchEndIndex].indices {
+            print("currentIndex: \(fileName.distance(from: fileName.startIndex, to: charIndex))")
+            print("match count: \(matchCount)")
+            guard matchCount < query.count else {
+                break
+            }
+            let currentQueryIndex = query.index(query.startIndex, offsetBy: matchCount)
+            let currentQueryChar = query[currentQueryIndex]
+            let char = fileName[charIndex]
+            if char == currentQueryChar {
+                matchCount += 1
+                let charLocation = fileName.distance(from: fileName.startIndex, to: charIndex)
+                // Highlights the matched character
+                resultAttributedString.setAttributes(highlightAttributes, range: NSMakeRange(charLocation, 1))
+            }
+        }
+        return resultAttributedString
     }
 }

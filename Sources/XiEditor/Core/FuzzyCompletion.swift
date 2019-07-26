@@ -18,14 +18,20 @@ import Foundation
 struct FuzzyCompletion {
     let path: String
     let score: Int
+    let matchStart: Int
+    let matchEnd: Int
     
     init?(from json: [String: Any]) {
         guard 
             let path = json["result_name"] as? String, 
-            let score = json["score"] as? Int 
+            let score = json["score"] as? Int,
+            let matchStart = json["match_start"] as? Int,
+            let matchEnd = json["match_end"] as? Int
         else { return nil }
         
         self.path = path
         self.score = score
+        self.matchStart = matchStart
+        self.matchEnd = matchEnd
     }
 }
