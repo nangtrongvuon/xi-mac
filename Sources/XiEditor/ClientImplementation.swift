@@ -220,7 +220,7 @@ class ClientImplementation: XiClient, DocumentsProviding, ConfigCacheProviding, 
         }
     }
 
-    func showQuickOpenCompletions(viewIdentifier: String, completions: [FuzzyCompletion]) {
+    func showQuickOpenCompletions(viewIdentifier: String, completions: [FuzzyResult]) {
         let document = documentForViewIdentifier(viewIdentifier: viewIdentifier)
         DispatchQueue.main.async {
             document?.editViewController?.quickOpenViewController.completionController.updateCompletions(completions: completions)

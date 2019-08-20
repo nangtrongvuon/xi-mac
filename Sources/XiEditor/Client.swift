@@ -74,7 +74,7 @@ protocol XiClient: AnyObject {
     func setQuickOpenRoot(viewIdentifier: String, root: String)
 
     /// A list of completions for a quick open request.
-    func showQuickOpenCompletions(viewIdentifier: String, completions: [FuzzyCompletion])
+    func showQuickOpenCompletions(viewIdentifier: String, completions: [FuzzyResult])
 
     /// A notification containing changes to the current config for the given view.
     /// - Note: The first time this message is sent, `changes` contains all defined

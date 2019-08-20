@@ -29,10 +29,12 @@ class QuickOpenPanel: NSPanel {
     override func resignKey() {
         // Checking for panel visibility avoids double calling the cleanup methods,
         // since closing the panel seems to call `resignKey` again.
+        #if DEBUG
         if self.isVisible {
             quickOpenViewController?.clearCompletions()
-            quickOpenViewController?.delegate.closeQuickOpenCompletionPanel()
+//            quickOpenViewController?.delegate.closeQuickOpenCompletionPanel()
         }
+        #endif
     }
 }
 
@@ -116,7 +118,7 @@ class QuickOpenCompletionController: NSObject, NSTableViewDataSource {
     weak var delegate: QuickOpenCompletionDelegate?
     // The root path where quick open query matches originate from.
     private var root: String = ""
-    private var currentCompletions = [FuzzyCompletion]()
+    private var currentCompletions = [FuzzyResult]()
     // This count is exposed for layout purposes.
     var completionsCount: Int { return currentCompletions.count }
     var currentQuery: String = ""
@@ -131,14 +133,14 @@ class QuickOpenCompletionController: NSObject, NSTableViewDataSource {
     }
 
     /// Parse received completions from core.
-    func updateCompletions(completions: [FuzzyCompletion]) {
+    func updateCompletions(completions: [FuzzyResult]) {
         // Override all current completions.
         currentCompletions = completions
         // Tells our view controller the list of completions has changed.
         delegate?.completionsChanged()
     }
     
-    func getCompletion(at index: Int) -> FuzzyCompletion {
+    func getCompletion(at index: Int) -> FuzzyResult {
         return currentCompletions[index]
     }
 
@@ -330,7 +332,7 @@ class QuickOpenCompletionRowView: NSTableRowView {
     }
 
     /// Configures this view with data from a completion.
-    func configure(query: String, completion: FuzzyCompletion) {
+    func configure(query: String, completion: FuzzyResult) {
         let fullPath = completion.path
         let processedCompletionName = highlightMatchingCharacters(with: query, in: completion)
         self.fileNameLabel.attributedStringValue = processedCompletionName
@@ -339,38 +341,14 @@ class QuickOpenCompletionRowView: NSTableRowView {
 
     /// Highlight matching quick open characters as they are typed.
     /// Tries to be UTF-8 safe.
-    func highlightMatchingCharacters(with query: String, in completion: FuzzyCompletion) -> NSAttributedString {
-        let fileURL = URL(fileURLWithPath: completion.path)
+    func highlightMatchingCharacters(with query: String, in result: FuzzyResult) -> NSAttributedString {
+        let fileURL = URL(fileURLWithPath: result.path)
         let fileName = fileURL.lastPathComponent
         let resultAttributedString = NSMutableAttributedString(string: fileName)
         let highlightAttributes = [NSAttributedString.Key.font: NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .bold)]
-        let matchStartIndex = fileName.index(fileName.startIndex, offsetBy: completion.matchStart)
-        let matchEndIndex = fileName.index(fileName.startIndex, offsetBy: completion.matchEnd)
-        var matchCount = 0
         
-        if query.isEmpty {
-            return resultAttributedString
-        }
-        // move two things at once
-        // query index and completion index
-        print("query: \(query)")
-        print("completion: \(completion)")
-        for charIndex in fileName[matchStartIndex ..< matchEndIndex].indices {
-            print("currentIndex: \(fileName.distance(from: fileName.startIndex, to: charIndex))")
-            print("match count: \(matchCount)")
-            guard matchCount < query.count else {
-                break
-            }
-            let currentQueryIndex = query.index(query.startIndex, offsetBy: matchCount)
-            let currentQueryChar = query[currentQueryIndex]
-            let char = fileName[charIndex]
-            if char == currentQueryChar {
-                matchCount += 1
-                let charLocation = fileName.distance(from: fileName.startIndex, to: charIndex)
-                // Highlights the matched character
-                resultAttributedString.setAttributes(highlightAttributes, range: NSMakeRange(charLocation, 1))
-            }
-        }
+
+
         return resultAttributedString
     }
 }
