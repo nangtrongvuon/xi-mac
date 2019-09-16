@@ -346,9 +346,11 @@ class QuickOpenCompletionRowView: NSTableRowView {
         let fileName = fileURL.lastPathComponent
         let resultAttributedString = NSMutableAttributedString(string: fileName)
         let highlightAttributes = [NSAttributedString.Key.font: NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .bold)]
+        print("highlighting file: \(fileName)")
+        print("filename count: \(fileName.count)")
+        print("match indices: \(result.match_indices)")
         for index in result.match_indices {
             let highlightRange = NSMakeRange(index, 1)
-            print("Highlight range: \(highlightRange)")
             resultAttributedString.addAttributes(highlightAttributes, range: highlightRange)
         }
         return resultAttributedString

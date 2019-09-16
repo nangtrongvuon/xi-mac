@@ -60,7 +60,8 @@
 		AED22D841FE84B4B0096E7C3 /* text.f.glsl in Resources */ = {isa = PBXBuildFile; fileRef = AED22D801FE84B4B0096E7C3 /* text.f.glsl */; };
 		AED22D861FE877000096E7C3 /* TextLine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AED22D851FE877000096E7C3 /* TextLine.swift */; };
 		AED23F181C83CBED002246CE /* EditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AED23F171C83CBEC002246CE /* EditView.swift */; };
-		C2D2433A227C263F0046F997 /* FuzzyResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D24339227C263F0046F997 /* FuzzyResult.swift */; };
+		C2DB5390232F42810066EE6D /* QuickOpen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2DB538E232F42810066EE6D /* QuickOpen.swift */; };
+		C2DB5392232F42AF0066EE6D /* FuzzyResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2DB5391232F42AF0066EE6D /* FuzzyResult.swift */; };
 		D803A9A421C7C4630042DE8F /* FindStatusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D803A9A321C7C4630042DE8F /* FindStatusTests.swift */; };
 		D803A9A621C7CCB90042DE8F /* FindStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = D803A9A521C7CCB90042DE8F /* FindStatus.swift */; };
 		D80F2D8421CEB4F90090BDA0 /* XiViewProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = D80F2D8321CEB4F90090BDA0 /* XiViewProxy.swift */; };
@@ -74,7 +75,6 @@
 		D8F1F45321C9BFA1007FC254 /* SearchTester.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F1F45221C9BFA1007FC254 /* SearchTester.swift */; };
 		E1288E8020B06E9C0068EEB9 /* StatusBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1288E7F20B06E9C0068EEB9 /* StatusBar.swift */; };
 		E16BB89820FE42A700A0D7A1 /* HoverViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E16BB89720FE42A600A0D7A1 /* HoverViewController.swift */; };
-		E1DF0B1B227B198D00753CB2 /* QuickOpen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1DF0B1A227B198D00753CB2 /* QuickOpen.swift */; };
 		F53EA2AD1DCAA8110071ACFD /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F53EA2AC1DCAA8110071ACFD /* Main.storyboard */; };
 		F53EA2AF1DCAAA170071ACFD /* EditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F53EA2AE1DCAAA170071ACFD /* EditViewController.swift */; };
 		F5BDBF371DCA9D2C0042430B /* Document.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5BDBF361DCA9D2C0042430B /* Document.swift */; };
@@ -200,7 +200,8 @@
 		AED22D801FE84B4B0096E7C3 /* text.f.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = text.f.glsl; sourceTree = "<group>"; };
 		AED22D851FE877000096E7C3 /* TextLine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextLine.swift; sourceTree = "<group>"; };
 		AED23F171C83CBEC002246CE /* EditView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EditView.swift; sourceTree = "<group>"; };
-		C2D24339227C263F0046F997 /* FuzzyResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FuzzyResult.swift; sourceTree = "<group>"; };
+		C2DB538E232F42810066EE6D /* QuickOpen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = QuickOpen.swift; path = Sources/XiEditor/QuickOpen.swift; sourceTree = SOURCE_ROOT; };
+		C2DB5391232F42AF0066EE6D /* FuzzyResult.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FuzzyResult.swift; sourceTree = "<group>"; };
 		D803A9A321C7C4630042DE8F /* FindStatusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindStatusTests.swift; sourceTree = "<group>"; };
 		D803A9A521C7CCB90042DE8F /* FindStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindStatus.swift; sourceTree = "<group>"; };
 		D80F2D8321CEB4F90090BDA0 /* XiViewProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XiViewProxy.swift; sourceTree = "<group>"; };
@@ -214,7 +215,6 @@
 		D8F1F45221C9BFA1007FC254 /* SearchTester.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchTester.swift; sourceTree = "<group>"; };
 		E1288E7F20B06E9C0068EEB9 /* StatusBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBar.swift; sourceTree = "<group>"; };
 		E16BB89720FE42A600A0D7A1 /* HoverViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HoverViewController.swift; sourceTree = "<group>"; };
-		E1DF0B1A227B198D00753CB2 /* QuickOpen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = QuickOpen.swift; sourceTree = "<group>"; };
 		F53EA2AC1DCAA8110071ACFD /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		F53EA2AE1DCAAA170071ACFD /* EditViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = EditViewController.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		F5BDBF361DCA9D2C0042430B /* Document.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Document.swift; sourceTree = "<group>"; };
@@ -328,6 +328,7 @@
 		3F9C4E7B223D7E1F00669C75 /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				C2DB5391232F42AF0066EE6D /* FuzzyResult.swift */,
 				3FE905F7225F13BD008F0CAF /* Config.swift */,
 				3FBCA857224D9563004575AB /* CoreNotification.swift */,
 				3FD5240F2268C5B100843657 /* CoreRequest.swift */,
@@ -335,7 +336,6 @@
 				D803A9A521C7CCB90042DE8F /* FindStatus.swift */,
 				3FC496EE22448332003D1533 /* MeasureWidth.swift */,
 				3FC496EC22447E37003D1533 /* ReplaceStatus.swift */,
-				C2D24339227C263F0046F997 /* FuzzyResult.swift */,
 				3F9C4E7C223D7E3200669C75 /* Types.swift */,
 			);
 			path = Core;
@@ -391,10 +391,10 @@
 				6057C52421A07F1900F6BD47 /* LoggingUtilities.swift */,
 				AEC4F6C91FFB02F10060E10E /* Trace.swift */,
 				6B90DD1B1F129C1A00DF3CE2 /* PluginCommand.swift */,
+				C2DB538E232F42810066EE6D /* QuickOpen.swift */,
 				6B53F5F11EF963EB00A4C664 /* Theme.swift */,
 				6B90DD211F14110B00DF3CE2 /* UserInputPromptController.swift */,
 				28F1ED491EC4C735008839BE /* Search.swift */,
-				E1DF0B1A227B198D00753CB2 /* QuickOpen.swift */,
 				E1288E7F20B06E9C0068EEB9 /* StatusBar.swift */,
 				832910D820229C2D0042C32B /* Fps.swift */,
 				E16BB89720FE42A600A0D7A1 /* HoverViewController.swift */,
@@ -640,7 +640,6 @@
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				English,
 				en,
 				Base,
 			);
@@ -734,7 +733,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E1DF0B1B227B198D00753CB2 /* QuickOpen.swift in Sources */,
 				F53EA2AF1DCAAA170071ACFD /* EditViewController.swift in Sources */,
 				3FBCA858224D9563004575AB /* CoreNotification.swift in Sources */,
 				4DC153D32165202B000EB215 /* XiWindowController.swift in Sources */,
@@ -750,11 +748,13 @@
 				6B90DD1C1F129C1A00DF3CE2 /* PluginCommand.swift in Sources */,
 				6B53F5F21EF963EB00A4C664 /* Theme.swift in Sources */,
 				AE499DF91C82C835002D68AF /* RPCSending.swift in Sources */,
+				C2DB5392232F42AF0066EE6D /* FuzzyResult.swift in Sources */,
 				6083722F2058597B00E9CF5D /* ShadowView.swift in Sources */,
 				3FC496EF22448332003D1533 /* MeasureWidth.swift in Sources */,
 				E1288E8020B06E9C0068EEB9 /* StatusBar.swift in Sources */,
 				AEC4F6CA1FFB02F10060E10E /* Trace.swift in Sources */,
 				3F9C4E7D223D7E3200669C75 /* Types.swift in Sources */,
+				C2DB5390232F42810066EE6D /* QuickOpen.swift in Sources */,
 				6BF9575B1FD70C420010BAE6 /* Client.swift in Sources */,
 				AED23F181C83CBED002246CE /* EditView.swift in Sources */,
 				D8D319F0218CB39A00D108D4 /* XiCore.swift in Sources */,
@@ -772,7 +772,6 @@
 				6B90DD221F14110B00DF3CE2 /* UserInputPromptController.swift in Sources */,
 				D80F2D8421CEB4F90090BDA0 /* XiViewProxy.swift in Sources */,
 				6057C52521A07F1900F6BD47 /* LoggingUtilities.swift in Sources */,
-				C2D2433A227C263F0046F997 /* FuzzyResult.swift in Sources */,
 				832910D920229C2D0042C32B /* Fps.swift in Sources */,
 				AED22D781FE8404D0096E7C3 /* Renderer.swift in Sources */,
 				D810EA5221BB291D00EABB21 /* ClientImplementation.swift in Sources */,
