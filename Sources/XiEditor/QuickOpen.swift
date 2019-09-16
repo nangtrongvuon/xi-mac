@@ -32,7 +32,7 @@ class QuickOpenPanel: NSPanel {
         #if DEBUG
         if self.isVisible {
             quickOpenViewController?.clearCompletions()
-//            quickOpenViewController?.delegate.closeQuickOpenCompletionPanel()
+            quickOpenViewController?.delegate.closeQuickOpenCompletionPanel()
         }
         #endif
     }
@@ -346,11 +346,22 @@ class QuickOpenCompletionRowView: NSTableRowView {
         let fileName = fileURL.lastPathComponent
         let resultAttributedString = NSMutableAttributedString(string: fileName)
         let highlightAttributes = [NSAttributedString.Key.font: NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .bold)]
-        print("highlighting file: \(fileName)")
-        print("filename count: \(fileName.count)")
-        print("match indices: \(result.match_indices)")
-        for index in result.match_indices {
-            let highlightRange = NSMakeRange(index, 1)
+        var indices = result.match_indices
+        var start = indices[0]
+        var prev = start
+        
+        for index in indices {
+            if abs(index - prev) > 1 {
+                let rangeLength = prev - start + 1 // Zero index
+                let highlightRange = NSMakeRange(start, rangeLength)
+                resultAttributedString.addAttributes(highlightAttributes, range: highlightRange)
+                start = index
+                indices.removeFirst(rangeLength)
+            }
+            prev = index
+        }
+        if !indices.isEmpty {
+            let highlightRange = NSMakeRange(start, prev - start + 1)
             resultAttributedString.addAttributes(highlightAttributes, range: highlightRange)
         }
         return resultAttributedString
